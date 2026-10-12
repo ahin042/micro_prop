@@ -119,12 +119,12 @@
   "q_snr": -0.058
  },
  "T3_gbdt": {
-  "q_noise": 0.005,
-  "q_lapvar": 0.008,
-  "q_lapvar_dn": 0.003,
-  "q_crete_blur": 0.059,
+  "q_noise": -0.003,
+  "q_lapvar": -0.0,
+  "q_lapvar_dn": 0.005,
+  "q_crete_blur": 0.057,
   "r_blur_r0.01": -0.002,
-  "q_span99": 0.037,
-  "q_snr": 0.008
+  "q_span99": 0.032,
+  "q_snr": 0.015
  }
 }
