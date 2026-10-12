@@ -32,11 +32,23 @@ Every package is pinned in `requirements.txt` (`pip freeze`).
 
 ## Pretrained weights and licenses
 
-| weights | source | license |
-|---|---|---|
-| `timm/resnet18.a1_in1k` | Hugging Face Hub via `timm.create_model(..., pretrained=True)` | Apache-2.0 (model card) |
-| `timm/efficientnet_b0.ra_in1k` (ablation only) | Hugging Face Hub via timm | Apache-2.0 (model card) |
-| timm library | PyPI | Apache-2.0 |
+All weights are vendored in `weights/` (not in git: large files) and verified by SHA-256 before use
+(`src/cnn.py`, `src/cnn2.py`, `src/p13_latnet.py`, `src/p16_latnet2.py`, `src/p17_dino_probe.py`). Full hashes, source and license of
+each file: `weights/MANIFEST_p17.json`. License = Hugging Face model card / timm pretrained config (they agree for every file).
+
+| weights | source | HF commit | SHA-256 | license |
+|---|---|---|---|---|
+| `convnext_tiny.fb_in22k_ft_in1k` | timm/convnext_tiny.fb_in22k_ft_in1k | `bc48a87f119b` | `77b619e187de71bc…` | apache-2.0 |
+| `tf_efficientnetv2_s.in21k_ft_in1k` | timm/tf_efficientnetv2_s.in21k_ft_in1k | `ea9abc143ea2` | `6f1933fb6c0d760e…` | apache-2.0 |
+| `resnet50.tv2_in1k` | timm/resnet50.tv2_in1k | `10eea9779fc8` | `30f57ada2f100011…` | bsd-3-clause |
+| `vit_small_patch14_dinov2.lvd142m` | timm/vit_small_patch14_dinov2.lvd142m | `4610ca143709` | `04d27f3400d059fc…` | apache-2.0 |
+| `resnet18.a1_in1k` | timm/resnet18.a1_in1k | `491b427b45c9` | `80c49dee3da4822c…` | apache-2.0 |
+| `efficientnet_b0.ra_in1k` | timm/efficientnet_b0.ra_in1k | `1b5383e5f79c` | `d569899762ea9b13…` | apache-2.0 |
+| `resnet18.tv_in1k` | https://download.pytorch.org/models/resnet18-f37072fd.pth (torchvision IMAGENET1K_V1) | n/a (content-addressed URL) | `f37072fd47e89c5e…` | bsd-3-clause |
+| timm library | PyPI | - | - | Apache-2.0 |
+
+To restore `weights/`: download each file from the listed repo at the listed commit (`model.safetensors`) and rename it to
+`weights/<name>.safetensors` (`weights/resnet18.tv_in1k.pth` for the torchvision file); the scripts refuse a file whose hash differs.
 
 No other pretrained weights, no external data, and no remote APIs. Test images are never used for training:
 per-image features are computed independently, and every fitted statistic (scalers, Box-Cox λ, CNN input
