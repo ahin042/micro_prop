@@ -23,6 +23,16 @@
    "lb": 12.3733,
    "recipe": "0.5 * CNN(resnet18, D4+blur+noise, global norm, 15 folds) + 0.5 * Ridge(S1+cheap+phase+pixphase+coherence+desc+latent-net)",
    "reproducible": "byte-identical from independent CNN and latent-net re-runs"
+  },
+  {
+   "file": "005_eq3_cnn_r18_ridge004_dinov2s.csv",
+   "sha256": "d082a9496e74e7f3c2d779d45f9828766688aa8d5063ad105c661265d946bc72",
+   "cv": 13.113,
+   "expected_lb": 11.95,
+   "lb": null,
+   "recipe": "mean of CNN r18 (004's), Ridge[004 features], Ridge[frozen DINOv2-S @252 embedding]",
+   "weights": "adds vit_small_patch14_dinov2.lvd142m (Apache-2.0, frozen)",
+   "fallback": "004 (DINOv2-free)"
   }
  ]
 }

@@ -1,7 +1,7 @@
 """Phase 17: equal-weight blend of CNN(s), the 004 feature Ridge, and Ridge on frozen DINOv2 embeddings; paired fold tests
 vs the 004 recipe and 003; optional submission. No blend weights are fitted (equal weights), so the only selection is
 the pre-declared DINOv2 backbone choice, reported in reports/p17_probe_*.json.
-Usage: python src/p17_build.py --cnn r18_final_a --dino dinos:252 [--dino dinob:252 ...] [--no_feat] [--name 005_....csv]
+Usage: python src/p17_build.py --cnn r18_final_a [--cnn r18up2_final:full] --dino dinos:252 [--dino dinob:252 ...] [--no_feat] [--name 005_....csv]
 """
 import argparse, json
 
@@ -16,8 +16,9 @@ ap.add_argument("--no_feat", action="store_true"); ap.add_argument("--name", def
 M, itr, ite, y = load_meta(); ids = M.ID.values; sp = splits(len(y))
 fr = lambda o: np.array([np.sqrt(np.mean((o[i // 5, b] - y[b]) ** 2)) for i, (a, b) in enumerate(sp)])
 comp = {}                                                                   # name -> (oof (3, n), test (n_test,))
-for t in args.cnn:
-    comp[f"cnn[{t}]"] = (np.load(C / "oof" / f"cnn_{t}_oof.npy"), np.load(C / "oof" / f"cnn_{t}_test.npy"))
+for t in args.cnn:                                                          # "tag" = fold-model test mean; "tag:full" = full-data seeds (cnn2.py --full)
+    tg, mode = (t.split(":") + ["folds"])[:2]
+    comp[f"cnn[{t}]"] = (np.load(C / "oof" / f"cnn_{tg}_oof.npy"), np.load(C / "oof" / (f"cnn_{tg}_full_test.npy" if mode == "full" else f"cnn_{tg}_test.npy")))
 if not args.no_feat:                                                        # the 004 feature Ridge, exactly as src/p13_build_004.py
     rd = lambda p: pd.read_parquet(C / p).set_index("ID").loc[ids].reset_index(drop=True)
     F, G, P, O, Dd, LN = rd("features.parquet"), rd("p12/phase.parquet"), rd("p12/pixphase.parquet"), rd("p12/orient.parquet"), rd("p13/desc.parquet"), rd("p13/latnet_pred.parquet")
@@ -37,7 +38,7 @@ for nm, o in list((k, v[0]) for k, v in comp.items()) + [("BLEND eq(" + ", ".joi
     if ref is not None:
         d = f - ref; r.update(d_vs_004=float(d.mean()), p_vs_004=float(stats.ttest_1samp(d, 0).pvalue) if np.abs(d).sum() else 1.0, wins_vs_004=int((d < 0).sum()))
     print(f"  {nm:60s} {r['mean']:.3f} ± {r['std']:.3f}" + (f" | vs 004 recipe d {r['d_vs_004']:+.3f} p {r['p_vs_004']:.2g} wins {r['wins_vs_004']}/15" if ref is not None else ""))
-tag = "_".join([*args.cnn, *(["feat"] if not args.no_feat else []), *[d.replace(":", "") for d in args.dino]])
+tag = "_".join([*[t.replace(":", "") for t in args.cnn], *(["feat"] if not args.no_feat else []), *[d.replace(":", "") for d in args.dino]])
 out = dict(components=list(comp), cv=res)
 if args.name:
     sub = write_sub(blend_t, ids[ite], args.name, y); f = SUB / args.name if (SUB / args.name).read_text(encoding="utf-8") == sub.to_csv(index=False) else SUB / "rerun" / args.name

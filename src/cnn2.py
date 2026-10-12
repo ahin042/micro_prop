@@ -22,6 +22,7 @@ ap.add_argument("--aug", default="full", help="comma list of d4,blur,noise,photo
 ap.add_argument("--epochs", type=int, default=40); ap.add_argument("--bs", type=int, default=32); ap.add_argument("--lr", type=float, default=3e-4)
 ap.add_argument("--reps", default="0", help="repeat indices to train, e.g. 0,1,2 (results merge with earlier runs of the same tag)")
 ap.add_argument("--folds", type=int, default=5); ap.add_argument("--seeds", type=int, default=1)
+ap.add_argument("--full", type=int, default=0, help="K>0: also train K seeds on ALL training images -> cnn_{tag}_full_test.npy (no OOF; the learning curve is steep)");
 ap.add_argument("--tag", required=True); ap.add_argument("--no_test", action="store_true")
 args = ap.parse_args()
 AUG = {"full": {"d4", "blur", "noise", "photo"}, "none": set()}.get(args.aug, set(args.aug.split(",")))
@@ -121,6 +122,13 @@ def train_one(a, b, seed):
             curve.append([ep + 1, float(np.sqrt(np.mean(ls)) * sd), float(np.sqrt(np.mean((pv * sd + mu - y[b]) ** 2)))])
     return ema, mu, sd, curve
 
+
+if args.full:                                                           # full-data models for the test predictions only
+    allidx = np.arange(len(y)); tv = []
+    for s in range(args.full):
+        t0 = time.time(); model, mu, sd, _ = train_one(allidx, allidx[:50], SEED + 100 + s); tv.append(predict(model, Xte) * sd + mu)
+        np.save(C / "oof" / f"cnn_{args.tag}_full_test.npy", np.mean(tv, 0)); print(f"[{args.tag}] full-data seed {s} done ({time.time() - t0:.0f}s)", flush=True)
+    raise SystemExit
 
 # OOF and test use the SAME predict(): full 256x256 image, 8 D4 transforms, mean of de-standardized outputs, EMA weights
 reps = [int(r) for r in args.reps.split(",")]; PART = C / "oof" / "cnn_parts"; PART.mkdir(parents=True, exist_ok=True)
