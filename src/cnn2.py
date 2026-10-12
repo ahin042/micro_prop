@@ -120,6 +120,7 @@ def train_one(a, b, seed):
             ema.eval()
             with torch.no_grad(): pv = torch.cat([ema(norm(Xtr[b[i:i + 50]].float() / 255)).float().squeeze(1) for i in range(0, len(b), 50)]).cpu().numpy()
             curve.append([ep + 1, float(np.sqrt(np.mean(ls)) * sd), float(np.sqrt(np.mean((pv * sd + mu - y[b]) ** 2)))])
+        if dev.type == "mps": torch.mps.empty_cache()                    # return cached blocks (12 GB at --up 2 otherwise); no effect on numerics
     return ema, mu, sd, curve
 
 

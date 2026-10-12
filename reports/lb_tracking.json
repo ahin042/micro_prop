@@ -30,18 +30,29 @@
    "file": "005_eq3_cnn_r18_ridge004_dinov2s.csv",
    "sha256": "d082a9496e74e7f3c2d779d45f9828766688aa8d5063ad105c661265d946bc72",
    "cv": 13.113,
-   "expected_lb": 11.953,
-   "lb": null,
+   "expected_lb": 11.95,
+   "lb": 11.9317120347,
    "recipe": "mean of CNN r18 (004's), Ridge[004 features], Ridge[frozen DINOv2-S @252 embedding]",
    "weights": "adds vit_small_patch14_dinov2.lvd142m (Apache-2.0, frozen)",
-   "fallback": "004 (DINOv2-free)"
+   "fallback": "004 (DINOv2-free)",
+   "cv_honest_crossfit_ln": 13.114,
+   "selection_rule": "PASS: vs 004 as reported d -0.415 p 1.3e-05 14/15; vs 004 honest d -0.415 p 1.2e-05 14/15",
+   "note": "test preds with cross-fit LN vs the file: corr 0.99994, mean |diff| 0.09 HV -> file kept as is",
+   "gap": -1.1813,
+   "uploaded": "2026-10-12"
   }
  ],
  "calibration": {
   "gap_003": -1.0697,
   "gap_004": -1.1561,
-  "gap_used": -1.16,
-  "rule": "expected_lb = cv - 1.16 (latest gap, 004); 003 gave -1.07, so treat +-0.1 as the calibration uncertainty",
-  "why": "test predictions use models fit on all 500 images (steep learning curve: DINO ridge 300->400 rows -0.33) while CV models see 400"
+  "gap_used": -1.17,
+  "rule": "expected_lb = cv - 1.17 (mean of 004/005 gaps -1.156/-1.181; 003 -1.070); +-0.1 uncertainty",
+  "why": "test predictions use models fit on all 500 images (steep learning curve: DINO ridge 300->400 rows -0.33) while CV models see 400",
+  "gap_005": -1.1813,
+  "gaps_all": [
+   -1.0697,
+   -1.1561,
+   -1.1813
+  ]
  }
 }
