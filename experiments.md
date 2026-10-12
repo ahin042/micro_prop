@@ -1,0 +1,26 @@
+# Experiments log
+
+| date | stage | method | CV RMSE ± std | LB | conclusion |
+|---|---|---|---|---|---|
+| 2026-10-12 | 0 | label/image recon (src/stage0_recon.py) | - | - | Continuous labels (500/500 unique, 14 decimals, no grid). log(y) ~ normal (Shapiro p 0.14 vs raw 4e-5). No exact/near duplicates (min 32px NN-MSE 0.58), no PNG metadata, file size r=-0.03. Treat as latent-variable estimation + formula recovery. |
+| 2026-10-12 | 0v2 | audited recon (src/stage0_recon.py v2) | - | - | Labels = unrounded float64 (500/500 shortest-repr). No grid (Rayleigh R<0.1 for all g). Box-Cox λ=-0.69 [-1.46,0.08] = target-transform candidate only; "log-normal ⇒ multiplicative" RETRACTED. One PNG encoder signature for all 1500 files. KS: 0/28 stats shifted. D4-invariant structure dup search (positive-control power 100%): 0 pairs. kNN on any image signature is worse than constant ⇒ global similarity carries no label info. |
+| 2026-10-12 | 0v2 | **BASELINE FLOOR** const mean | 17.665 ± 1.329 | - | RepeatedKFold(5x3, seed 42). Trivial ceiling. |
+| 2026-10-12 | 0v2 | **BASELINE FLOOR** Ridge on 28 cheap global stats | 15.156 ± 1.227 | - | Stage 1 must beat this (R² ≈ 0.26). |
+| 2026-10-12 | 0v2 | **BASELINE FLOOR** kNN-5 on z-norm 32px box thumbnails | 19.606 ± 1.464 | - | Worse than constant (struct64 18.65, radial 18.92 also worse). |
+| 2026-10-12 | 0-close | F1 split control families; F2 left-tail robust null (median−5·MAD); F3 Hann window; F4 regex=False | - | - | struct64 flags 54 test-train pairs, but its flagged train-train pairs have \|dy\| 33.1 > random 19.7, and visual check shows different structures (low-contrast shading) ⇒ false positive, **no leak**. raw32/radial: 0 flagged. Hann: \|rho\| up for 7/8 bands (band0 .069→.131). |
+| 2026-10-12 | P1 | anchors after F3: const / ridge_cheap / lgbm_cheap | 17.665±1.329 / 14.853±1.267 / 14.993±1.310 | - | R² −0.01 / 0.281 / 0.269. kNN all < const. New floor = 14.853. |
+| 2026-10-12 | P2 | target transform raw/log/boxcox (ridge, lgbm) | ridge 14.853/14.868/14.899; lgbm 14.993/14.995/14.997 | - | Differences ≪ fold std; raw wins. Box-Cox λ was not decisive. |
+| 2026-10-12 | P3 | **submissions/001_cheap_gbdt.csv** = Ridge(raw y) on 28 cheap stats, refit on 500, clipped | 14.853±1.267 | _pending_ | Expected public LB 14.9 (95% band for 300 rows: 13.5–16.3). (File name per request; P2 winner was Ridge, not GBDT.) |
+| 2026-10-12 | 1 | features.py: 114 nuisance-aware features (q_/r_/n_), 45.9s for 1500 imgs | - | - | 84/114 features correlate more with blur/noise than with y; every classic grain-size estimator is noise-dominated (n_mli ρy −0.03 vs ρnoise 0.76). Top: n_otsu_c0 ρ 0.44. |
+| 2026-10-12 | 1 | ridge / lgbm on stage1 feats; + cheap | 14.802±1.077 / 14.804±1.176; 14.608±1.089 / 14.574±1.129 | - | R² ≤ 0.31. vs 001 paired Δ −0.28, p 0.10 (n.s.). |
+| 2026-10-12 | 2 | T1 log-linear power law (5 latents) | 15.515±1.234 | - | R²(log y) CV 0.22; d exponent +0.02 (not −0.5). **Formula NOT recovered.** Additive Hall-Petch form 15.35. |
+| 2026-10-12 | 2 | T2 3749 enumerated H0 + C·Π formulas | best 15.531 | - | Worse than Ridge-cheap. T3: formula residual ρ with contrast span 0.23, blur −0.17 ⇒ measurement bottleneck; GBDT residual vs nuisance \|ρ\| ≤ 0.06. |
+| 2026-10-12 | 2 | submissions/002_s1_lgbm.csv (lgbm stage1+cheap) | 14.574±1.129 | _not uploaded_ | Expected public LB 14.6 (13.3–16.0). |
+| 2026-10-12 | 2 | submissions/003_blend_ridge_cheap_lgbm_s1.csv (0.5·001 + 0.5·002, fixed weights) | 14.355±1.182 | _not uploaded_ | R² 0.329. vs 001 paired Δ −0.498, p 7e-5, 14/15 folds. Best CV so far. |
+| 2026-10-12 | A | ceiling: feature-space twin test (s1+cheap, z / PCA-white95) | - | - | closest 1% pairs \|dy\| 15.2 / 14.7 vs GMD 19.7; clean-structural(23) 15.5/15.2; blur-dominated(84) 15.8/15.9; nuisance(7) 17.7/18.2 ⇒ features insufficient. |
+| 2026-10-12 | A | residual of blend 003 | sd 14.35 | - | skew 0.33, exkurt 0.73 (Shapiro p .002); sd by pred tercile 11.6/15.1/15.9; max \|ρ(res, feat)\| 0.11 (0 Bonferroni-sig); residual learnable R² −0.02 ⇒ measurement/information-limited. |
+| 2026-10-12 | B | B1 MTF fit (σ̂ validated: +known blur recovered within ~0.15 px), B2 RL-deconv + re-segment (d_), B3 scale-space extrapolation (x_) | - | - | 1/60 new features breaks blur domination (d_otsu_c0 ρy .365 vs ρblur .317); no grain-size estimator does. |
+| 2026-10-12 | B | B4 lgbm / ridge on s1+cheap+new | 14.514±1.227 / 14.616±1.024 | - | vs 14.574: Δ −0.060 (p .37, 13/15 wins) / +0.042 (p .72). Within noise ⇒ not adopted as primary; kept as blend candidate. |
+| 2026-10-12 | C1 | quadrant (128px) ICC of top-20 predictive S1 features | - | - | median ICC 0.603 (<0.8): n_otsu_c0 .42, n_ws_eqd_mean .41; only nuisance-like globals >0.8 ⇒ patch label sharing NOT valid; CNN trains on full 256 images. |
+| 2026-10-12 | D | blends of non-CNN families (eq vs cross-fitted NNLS) | eq(ridge_cheap+lgbm_s1+lgbm_s1new) 14.297±1.202 | - | vs 003 Δ −0.057, p .13 ⇒ within noise, 003 kept. |
+| 2026-10-12 | E | refactor: column order of features.parquet changed (Part B) ⇒ lgbm_s1 OOF 14.574→14.568 (ridge bit-identical); 002/003 regenerated by scripts | 003: 14.354±1.199 | - | 003 file changed by mean 0.36 / max 1.67 (corr .9989) vs the first version. |
