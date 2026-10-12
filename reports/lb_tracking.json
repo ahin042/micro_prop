@@ -1,12 +1,13 @@
 {
- "note": "CV = RepeatedKFold(5x3, seed 42) fold-mean RMSE. CV->LB offset: 003 14.355 -> 13.2852 (-1.07); 004 13.529 -> 12.3733 (-1.156). Fill 'lb' after each manual upload.",
+ "note": "CV = RepeatedKFold(5x3, seed 42) fold-mean RMSE on the 500 train images. Expected LB = CV + gap.",
  "submissions": [
   {
    "file": "003_recovered.csv",
    "sha256": "2ffe88bf6df976d4e111c8c73392a94c4758aab4e302dd40332e798ee80fd48a",
-   "cv": 14.355,
+   "cv": 14.3549,
    "lb": 13.2852,
-   "uploaded": "2026-10-12 (first upload of 003, byte-identical)"
+   "uploaded": "2026-10-12 (first upload of 003, byte-identical)",
+   "gap": -1.0697
   },
   {
    "file": "003_blend_ridge_cheap_lgbm_s1.csv (regenerated 11:27, column-order variant)",
@@ -18,21 +19,29 @@
   {
    "file": "004_cnn_r18_d4bn_plus_ridge_desc_latnet.csv",
    "sha256": "1cabcbcfcd2b8ac0b094d224a380611172d4c15a247b961b491ce9f53e8fd1b8",
-   "cv": 13.529,
+   "cv": 13.52938,
    "expected_lb": 12.46,
-   "lb": 12.3733,
+   "lb": 12.3733238228,
    "recipe": "0.5 * CNN(resnet18, D4+blur+noise, global norm, 15 folds) + 0.5 * Ridge(S1+cheap+phase+pixphase+coherence+desc+latent-net)",
-   "reproducible": "byte-identical from independent CNN and latent-net re-runs"
+   "reproducible": "byte-identical from independent CNN and latent-net re-runs",
+   "gap": -1.1561
   },
   {
    "file": "005_eq3_cnn_r18_ridge004_dinov2s.csv",
    "sha256": "d082a9496e74e7f3c2d779d45f9828766688aa8d5063ad105c661265d946bc72",
    "cv": 13.113,
-   "expected_lb": 11.95,
+   "expected_lb": 11.953,
    "lb": null,
    "recipe": "mean of CNN r18 (004's), Ridge[004 features], Ridge[frozen DINOv2-S @252 embedding]",
    "weights": "adds vit_small_patch14_dinov2.lvd142m (Apache-2.0, frozen)",
    "fallback": "004 (DINOv2-free)"
   }
- ]
+ ],
+ "calibration": {
+  "gap_003": -1.0697,
+  "gap_004": -1.1561,
+  "gap_used": -1.16,
+  "rule": "expected_lb = cv - 1.16 (latest gap, 004); 003 gave -1.07, so treat +-0.1 as the calibration uncertainty",
+  "why": "test predictions use models fit on all 500 images (steep learning curve: DINO ridge 300->400 rows -0.33) while CV models see 400"
+ }
 }
