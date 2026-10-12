@@ -1,0 +1,31 @@
+{
+ "config": {
+  "arch": "resnet18",
+  "norm": "global",
+  "aug": "d4,blur,noise",
+  "epochs": 40,
+  "bs": 32,
+  "lr": 0.0003,
+  "repeats": 1,
+  "folds": 5,
+  "seeds": 1,
+  "tag": "r18_d4blurnoise_global",
+  "no_test": true
+ },
+ "aug": [
+  "blur",
+  "d4",
+  "noise"
+ ],
+ "device": "mps",
+ "fold_rmse": [
+  15.197494024814793,
+  13.73099543714336,
+  13.529353398137216,
+  12.706140525306424,
+  14.523555768869594
+ ],
+ "mean": 13.937507830854278,
+ "std": 0.8551631710379126,
+ "sec": 490.0918810367584
+}
