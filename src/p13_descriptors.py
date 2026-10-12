@@ -25,7 +25,11 @@ ABS, MADK, RNG = (10, 15, 20, 25, 30), (2, 3, 4, 5, 6), (.08, .12, .16, .20, .25
 
 
 def desc(split, id_):
-    a = np.asarray(Image.open(D / split / f"{id_}.png")); f = a.astype(np.float64); sn = noise_sigma(f)
+    return desc_array(np.asarray(Image.open(D / split / f"{id_}.png")), id_)
+
+
+def desc_array(a, id_=None):
+    f = a.astype(np.float64); sn = noise_sigma(f)
     o, m = extract_array(a, id_, masks=True, ext=False); lab, bm, pores = m["lab"], m["bm"], m["pores"]
     r = {"ID": id_}
     inner = ~ndi.binary_dilation(bm | pores, disk(2))
