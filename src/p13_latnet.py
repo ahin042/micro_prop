@@ -21,6 +21,7 @@ from common import C, D, REP, ROOT, SEED, load_meta, sha256
 from p13_descriptors import desc_array
 
 ap = argparse.ArgumentParser(); ap.add_argument("--epochs", type=int, default=100); ap.add_argument("--bs", type=int, default=32)
+ap.add_argument("--out", default="latnet_pred.parquet"); ap.add_argument("--final_only", action="store_true")
 args = ap.parse_args()
 torch.use_deterministic_algorithms(True, warn_only=True); torch.manual_seed(SEED); rng = np.random.default_rng(SEED)
 dev = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
@@ -103,6 +104,9 @@ def classical(a):
 
 
 if __name__ == "__main__":
+    if args.final_only:
+        m = train(cl); P = predict(m, IMG.float()) * sd_L + mu_L
+        pd.DataFrame(P, columns=[f"ln_{k}" for k in LAT]).assign(ID=ids_all).to_parquet(C / "p13" / args.out); print("wrote", args.out); raise SystemExit
     t0 = time.time(); m = train(fit); print(f"[split model] trained {time.time() - t0:.0f}s", flush=True)
     names = list(LAT); qs = {"L0 none": None, "L1 dirty p25": .25, "L2 dirty p50": .5, "L3 dirty p75": .75, "L4 dirty p90": .9}; acc = {}
     for lv, qq in qs.items():
@@ -123,4 +127,4 @@ if __name__ == "__main__":
     A.to_csv(REP / "p13_latnet_accuracy.csv")
     t0 = time.time(); m = train(cl); print(f"[final model on all {len(cl)} clean] trained {time.time() - t0:.0f}s", flush=True)
     P = predict(m, IMG.float()) * sd_L + mu_L
-    pd.DataFrame(P, columns=[f"ln_{k}" for k in names]).assign(ID=ids_all).to_parquet(C / "p13" / "latnet_pred.parquet"); print("wrote cache/p13/latnet_pred.parquet")
+    pd.DataFrame(P, columns=[f"ln_{k}" for k in names]).assign(ID=ids_all).to_parquet(C / "p13" / args.out); print("wrote cache/p13/" + args.out)
