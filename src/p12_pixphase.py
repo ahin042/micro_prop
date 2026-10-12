@@ -28,7 +28,7 @@ def pix_feats(split, id_):
 
 
 if __name__ == "__main__":
-    M, itr, ite, y = load_meta(); out = C / "p12" / "pixphase.parquet"
+    M, itr, ite, y = load_meta(); (C / "p12").mkdir(parents=True, exist_ok=True); out = C / "p12" / "pixphase.parquet"
     if not out.exists():
         items = [("train", i) for i in M.ID.values[itr]] + [("test", i) for i in M.ID.values[ite]]
         pd.DataFrame(Parallel(n_jobs=8)(delayed(pix_feats)(s, i) for s, i in items)).to_parquet(out)

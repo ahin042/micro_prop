@@ -93,7 +93,7 @@ def desc_array(a, id_=None):
 
 
 if __name__ == "__main__":
-    M, itr, ite, y = load_meta(); (C / "p13").mkdir(exist_ok=True); out = C / "p13" / "desc.parquet"
+    M, itr, ite, y = load_meta(); (C / "p13").mkdir(parents=True, exist_ok=True); out = C / "p13" / "desc.parquet"
     items = [("train", i) for i in M.ID.values[itr]] + [("test", i) for i in M.ID.values[ite]]
     import p13_descriptors as me                                          # workers pickle by reference
     pd.DataFrame(Parallel(n_jobs=8)(delayed(me.desc)(s, i) for s, i in items)).to_parquet(out); print("wrote", out)

@@ -29,8 +29,9 @@ o_c, p_c = np.load(C / "oof" / f"cnn_{args.cnn}_oof.npy"), np.load(C / "oof" / f
 assert o_c.shape == (3, len(y)) and np.isfinite(o_c).all() and p_c.shape == (len(ite),)
 fr = lambda o: np.array([np.sqrt(np.mean((o[i // 5, b] - y[b]) ** 2)) for i, (a, b) in enumerate(sp)])
 base = fr(np.load(C / "oof" / "003_recovered_oof.npy")); res = {}
-nested = np.load(C / "p13" / "oof_ridge_p12_nested.npy")
-for nm, o in [(f"ridge[{args.feats}]", o_r["oof"]), ("cnn", o_c), (f"eq(cnn, ridge[{args.feats}])", .5 * (o_c + o_r["oof"])), ("eq(cnn, ridge_p12 nested-honest)", .5 * (o_c + nested))]:
+nf = C / "p13" / "oof_ridge_p12_nested.npy"; nested = np.load(nf) if nf.exists() else None        # analysis artifact (p13_audit.py), optional
+for nm, o in [(f"ridge[{args.feats}]", o_r["oof"]), ("cnn", o_c), (f"eq(cnn, ridge[{args.feats}])", .5 * (o_c + o_r["oof"])), ("eq(cnn, ridge_p12 nested-honest)", None if nested is None else .5 * (o_c + nested))]:
+    if o is None: continue
     d = fr(o) - base; res[nm] = dict(mean=float(fr(o).mean()), std=float(fr(o).std()), d_vs_003=float(d.mean()), p=float(stats.ttest_1samp(d, 0).pvalue), wins=int((d < 0).sum()))
     print(f"  {nm:34s} {res[nm]['mean']:.3f} +/- {res[nm]['std']:.3f} | vs 003(LB 13.2852) d {d.mean():+.3f} p {res[nm]['p']:.2g} wins {res[nm]['wins']}/15")
 out = write_sub(.5 * (p_c + p_r), ids_all[ite], args.name, y)
