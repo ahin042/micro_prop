@@ -1,5 +1,7 @@
 # Experiments log
 
+Language: English | [한국어](experiments.ko.md) | [日本語](experiments.ja.md)
+
 | date | stage | method | CV RMSE ± std | LB | conclusion |
 |---|---|---|---|---|---|
 | 2026-10-12 | 0 | label/image recon (src/stage0_recon.py) | - | - | Continuous labels (500/500 unique, 14 decimals, no grid). log(y) ~ normal (Shapiro p 0.14 vs raw 4e-5). No exact/near duplicates (min 32px NN-MSE 0.58), no PNG metadata, file size r=-0.03. Treat as latent-variable estimation + formula recovery. |

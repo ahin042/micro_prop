@@ -1,7 +1,10 @@
 # Microstructure → hardness regression
 
+Language: English | [한국어](README.ko.md) | [日本語](README.ja.md)
+
 Image regression (256×256 grayscale microstructure → synthetic hardness proxy, metric RMSE).
-Full experiment log: [experiments.md](experiments.md). Machine-readable results: `reports/*.json`.
+Full experiment log: [experiments.md](experiments.md) ([한국어](experiments.ko.md), [日本語](experiments.ja.md)).
+Machine-readable results: `reports/*.json`.
 
 ## Reproduce (single command)
 
