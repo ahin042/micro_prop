@@ -6,9 +6,9 @@ Families (train images only; cached in cache/p12/):
   c corr   : radial autocovariance/autocorrelation (64 lags) + two-point S2 and lineal-path L (dark/bright phase, x/y)
   d gabor  : Gabor bank (5 scales x 8 orientations) mean/std + second-order (scattering-like) means
   e emb_*  : frozen timm backbones (Apache-2.0), multi-stage mean+std pooled, full 256x256 input
-Models: Ridge (inner alpha), PLS curve R^2 vs n_components, RBF kernel ridge (inner alpha/gamma); shared 5x3 folds.
+Models: Ridge (inner alpha), PLS curve RMSE/R^2 vs n_components, RBF kernel ridge (inner alpha/gamma); shared 5x3 folds.
 """
-import json, sys, time
+import json, time
 
 import numpy as np
 import pandas as pd
@@ -82,13 +82,13 @@ def feats(i):
 
 def embeddings(ids, name, ckpt=None):
     import timm, torch
-    torch.set_num_threads(6)
+    torch.set_num_threads(2)
     kw = dict(pretrained_cfg_overlay=dict(file=ckpt)) if ckpt else {}
     m = timm.create_model(name, pretrained=True, features_only=True, **kw).eval()
     mean, std = np.array(m.pretrained_cfg["mean"]), np.array(m.pretrained_cfg["std"]); out = []
     with torch.no_grad():
-        for k in range(0, len(ids), 25):
-            a = np.stack([np.asarray(Image.open(D / "train" / f"{i}.png")) for i in ids[k:k + 25]]).astype(np.float32) / 255
+        for k in range(0, len(ids), 16):
+            a = np.stack([np.asarray(Image.open(D / "train" / f"{i}.png")) for i in ids[k:k + 16]]).astype(np.float32) / 255
             x = torch.from_numpy(((a[:, None] - mean[None, :, None, None]) / std[None, :, None, None]).astype(np.float32))
             out.append(torch.cat([torch.cat([z.mean((2, 3)), z.std((2, 3))], 1) for z in m(x)], 1).numpy())
     return np.concatenate(out)
@@ -100,11 +100,23 @@ if __name__ == "__main__":
         rows = Parallel(n_jobs=8)(delayed(feats)(i) for i in ids)
         for k in rows[0]: np.save(P / f"{k}.npy", np.stack([r[k] for r in rows]))
         print(f"[feats a-d] {time.time() - t0:.0f}s", flush=True)
-    for nm, ck in [("resnet18", str(C.parent / "weights" / "resnet18.a1_in1k.safetensors")), ("resnet50.a1_in1k", None), ("convnext_tiny.fb_in1k", None)]:
+    local_backbones = [
+        ("resnet18.a1_in1k", C.parent / "weights" / "resnet18.a1_in1k.safetensors"),
+        ("efficientnet_b0.ra_in1k", C.parent / "weights" / "efficientnet_b0.ra_in1k.safetensors"),
+    ]
+    for nm, ck in local_backbones:
         fn = P / f"emb_{nm.split('.')[0]}.npy"
-        if not fn.exists(): np.save(fn, embeddings(ids, nm, ck)); print(f"[emb {nm}] {time.time() - t0:.0f}s", flush=True)
+        if not fn.exists():
+            if not ck.exists():
+                print(f"[skip emb {nm}] missing local weights: {ck}", flush=True)
+                continue
+            np.save(fn, embeddings(ids, nm, str(ck)))
+            print(f"[emb {nm}] {time.time() - t0:.0f}s", flush=True)
     F = pd.read_parquet(C / "features.parquet").set_index("ID").loc[M.ID].reset_index().iloc[itr]
-    fams = {k: np.load(P / f"{k}.npy") for k in ["spec", "hist", "corr", "gabor", "emb_resnet18", "emb_resnet50", "emb_convnext_tiny"]}
+    fams = {k: np.load(P / f"{k}.npy") for k in ["spec", "hist", "corr", "gabor"]}
+    for k in ["emb_resnet18", "emb_efficientnet_b0"]:
+        fn = P / f"{k}.npy"
+        if fn.exists(): fams[k] = np.load(fn)
     fams["s1+cheap (ref)"] = np.hstack([F[[c for c in F.columns if c[:2] in ("q_", "r_", "n_", "b_")]].values.astype(float), M[CHEAP].values[itr]])
     fams["a+b+c+d"] = np.hstack([fams[k] for k in ["spec", "hist", "corr", "gabor"]])
     sp = splits(len(y)); var = y.var(); res = {}
@@ -121,10 +133,16 @@ if __name__ == "__main__":
         X = np.nan_to_num(X.astype(float)); r = {"dim": X.shape[1]}
         for mn, fn in [("ridge", ridge), ("krr", krr)]:
             o = cv(fn, X, y, sp); r[mn] = (round(o["mean"], 3), round(o["std"], 3)); np.save(P / f"oof_{name.split(' ')[0]}_{mn}.npy", o["oof"])
-        curve = {}
+        curve, rmse_curve = {}, {}
         for k in [1, 2, 3, 5, 8, 12, 20, 30]:
             if k > min(X.shape[1], 300): continue
-            o = cv(lambda a, b_, c: PLSRegression(k, scale=True).fit(a, b_).predict(c).ravel(), X, y, sp); curve[k] = round(1 - o["mean"] ** 2 / var, 3)
-        r["pls_r2"] = curve; res[name] = r
-        print(f"{name:18s} dim {r['dim']:5d} | ridge {r['ridge'][0]:.3f}±{r['ridge'][1]:.3f} | krr {r['krr'][0]:.3f}±{r['krr'][1]:.3f} | PLS R2 {curve}", flush=True)
+            o = cv(lambda a, b_, c, kk=k: PLSRegression(kk, scale=True).fit(a, b_).predict(c).ravel(), X, y, sp)
+            rmse_curve[k] = (round(o["mean"], 3), round(o["std"], 3))
+            curve[k] = round(1 - o["mean"] ** 2 / var, 3)
+        best_k = min(rmse_curve, key=lambda kk: rmse_curve[kk][0])
+        r["pls"] = dict(best_k=int(best_k), rmse=rmse_curve[best_k], rmse_curve=rmse_curve, r2_curve=curve)
+        res[name] = r
+        print(f"{name:18s} dim {r['dim']:5d} | ridge {r['ridge'][0]:.3f}±{r['ridge'][1]:.3f} | "
+              f"krr {r['krr'][0]:.3f}±{r['krr'][1]:.3f} | PLS best k={best_k} "
+              f"{rmse_curve[best_k][0]:.3f}±{rmse_curve[best_k][1]:.3f} | PLS R2 {curve}", flush=True)
     json.dump(res, open(REP / "p12_probes.json", "w"), indent=1)
