@@ -18,7 +18,8 @@ ap = argparse.ArgumentParser()
 ap.add_argument("--arch", default="resnet18"); ap.add_argument("--norm", default="global", choices=["global", "image"])
 ap.add_argument("--aug", default="full", help="comma list of d4,blur,noise,photo | full | none")
 ap.add_argument("--epochs", type=int, default=40); ap.add_argument("--bs", type=int, default=32); ap.add_argument("--lr", type=float, default=3e-4)
-ap.add_argument("--repeats", type=int, default=1); ap.add_argument("--folds", type=int, default=5); ap.add_argument("--seeds", type=int, default=1)
+ap.add_argument("--reps", default="0", help="repeat indices to train, e.g. 0,1,2 (results merge with earlier runs of the same tag)")
+ap.add_argument("--folds", type=int, default=5); ap.add_argument("--seeds", type=int, default=1)
 ap.add_argument("--tag", required=True); ap.add_argument("--no_test", action="store_true")
 args = ap.parse_args()
 AUG = {"full": {"d4", "blur", "noise", "photo"}, "none": set()}.get(args.aug, set(args.aug.split(",")))
@@ -74,7 +75,7 @@ def predict(model, X, bs=50):
     return torch.cat(out).cpu().numpy()
 
 
-def train_one(a, seed):
+def train_one(a, b, seed):
     torch.manual_seed(seed); g = torch.Generator(device=dev); g.manual_seed(seed)
     mu, sd = y[a].mean(), y[a].std(); yt = torch.tensor((y[a] - mu) / sd, dtype=torch.float32, device=dev)
     model = timm.create_model(args.arch, pretrained=True, in_chans=1, num_classes=1, drop_rate=0.1).to(dev)
@@ -83,35 +84,50 @@ def train_one(a, seed):
     opt = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=1e-2)
     spe = math.ceil(len(a) / args.bs); tot = spe * args.epochs; warm = spe
     sch = torch.optim.lr_scheduler.LambdaLR(opt, lambda s: (s + 1) / warm if s < warm else 0.5 * (1 + math.cos(math.pi * (s - warm) / (tot - warm))))
-    step = 0
+    step = 0; curve = []
     for ep in range(args.epochs):
-        model.train(); perm = torch.randperm(len(a), generator=torch.Generator().manual_seed(seed * 1000 + ep))
+        model.train(); ls = []; perm = torch.randperm(len(a), generator=torch.Generator().manual_seed(seed * 1000 + ep))
         for i in range(spe):
-            b = perm[i * args.bs:(i + 1) * args.bs]
-            if len(b) < 2: continue
-            xb = norm(augment(Xtr[a[b.numpy()]].float() / 255, g))
+            bi = perm[i * args.bs:(i + 1) * args.bs]                      # minibatch positions within a (b = val indices)
+            if len(bi) < 2: continue
+            xb = norm(augment(Xtr[a[bi.numpy()]].float() / 255, g))
             with torch.autocast(device_type=dev.type, dtype=torch.bfloat16):
-                loss = Fn.mse_loss(model(xb).float().squeeze(1), yt[b.to(dev)])
-            opt.zero_grad(set_to_none=True); loss.backward(); opt.step(); sch.step(); step += 1
+                loss = Fn.mse_loss(model(xb).float().squeeze(1), yt[bi.to(dev)])
+            opt.zero_grad(set_to_none=True); loss.backward(); opt.step(); sch.step(); step += 1; ls.append(loss.item())
             dcy = min(0.995, (1 + step) / (10 + step))
             with torch.no_grad():
                 for pe, pm in zip(ema.state_dict().values(), model.state_dict().values()):
                     pe.copy_(pe * dcy + pm.detach() * (1 - dcy)) if pe.dtype.is_floating_point else pe.copy_(pm)
-    return ema, mu, sd
+        if (ep + 1) % 5 == 0:                                            # diagnostics only, never used for selection
+            ema.eval()
+            with torch.no_grad(): pv = torch.cat([ema(norm(Xtr[b[i:i + 50]].float() / 255)).float().squeeze(1) for i in range(0, len(b), 50)]).cpu().numpy()
+            curve.append([ep + 1, float(np.sqrt(np.mean(ls)) * sd), float(np.sqrt(np.mean((pv * sd + mu - y[b]) ** 2)))])
+    return ema, mu, sd, curve
 
 
-jobs = [(i, ab) for i, ab in enumerate(splits(len(y))) if i // 5 < args.repeats and i % 5 < args.folds]
-oof = np.full((args.repeats, len(y)), np.nan); te = []; fr = []; t0 = time.time()
-for fi, (a, b) in jobs:
-    pv = []
+# OOF and test use the SAME predict(): full 256x256 image, 8 D4 transforms, mean of de-standardized outputs, EMA weights
+reps = [int(r) for r in args.reps.split(",")]; PART = C / "oof" / "cnn_parts"; PART.mkdir(parents=True, exist_ok=True)
+fo, fj = C / "oof" / f"cnn_{args.tag}_oof.npy", REP / f"cnn_{args.tag}.json"
+oof = np.full((3, len(y)), np.nan); prev = json.load(open(fj)) if fj.exists() else {}
+if fo.exists(): o = np.load(fo); oof[:len(o)] = o                       # merge with earlier repeats of this tag
+folds = prev.get("folds") or {str(i): {"rmse": v} for i, v in enumerate(prev.get("fold_rmse", []))}
+t0 = time.time()
+for fi, (a, b) in [(i, ab) for i, ab in enumerate(splits(len(y))) if i // 5 in reps and i % 5 < args.folds]:
+    pv, tv, cv_, trr = [], [], [], []
     for s in range(args.seeds):
-        model, mu, sd = train_one(a, SEED + s); pv.append(predict(model, Xtr[b]) * sd + mu)
-        if not args.no_test: te.append(predict(model, Xte) * sd + mu)
-    r = fi // 5
-    oof[r, b] = np.mean(pv, 0); fr.append(float(np.sqrt(np.mean((oof[r, b] - y[b]) ** 2))))
-    print(f"[{args.tag}] fold {fi} rmse {fr[-1]:.3f}  ({time.time() - t0:.0f}s)", flush=True)
-res = dict(config=vars(args), aug=sorted(AUG), device=str(dev), fold_rmse=fr, mean=float(np.mean(fr)), std=float(np.std(fr)), sec=time.time() - t0)
-print(f"[{args.tag}] RMSE {res['mean']:.3f} +/- {res['std']:.3f}  ({res['sec']:.0f}s)")
-np.save(C / "oof" / f"cnn_{args.tag}_oof.npy", oof)
-if te: np.save(C / "oof" / f"cnn_{args.tag}_test.npy", np.mean(te, 0))
-json.dump(res, open(REP / f"cnn_{args.tag}.json", "w"), indent=1)
+        model, mu, sd, curve = train_one(a, b, SEED + s); pv.append(predict(model, Xtr[b]) * sd + mu); cv_.append(curve)
+        trr.append(float(np.sqrt(np.mean((predict(model, Xtr[a]) * sd + mu - y[a]) ** 2))))
+        if not args.no_test: tv.append(predict(model, Xte) * sd + mu)
+    oof[fi // 5, b] = np.mean(pv, 0); rm = float(np.sqrt(np.mean((oof[fi // 5, b] - y[b]) ** 2)))
+    if tv: np.save(PART / f"{args.tag}_test_f{fi}.npy", np.mean(tv, 0))
+    folds[str(fi)] = dict(rmse=rm, train_rmse=float(np.mean(trr)), curve=cv_[0])
+    print(f"[{args.tag}] fold {fi} rmse {rm:.3f} train {np.mean(trr):.3f} ({time.time() - t0:.0f}s)", flush=True)
+if folds:                                                            # nothing to save when no fold ran
+    fr = [folds[k]["rmse"] for k in sorted(folds, key=int)]
+    res = dict(config={**prev.get("config", {}), **vars(args)}, aug=sorted(AUG), device=str(dev), folds=folds, fold_rmse=fr,
+               mean=float(np.mean(fr)), std=float(np.std(fr)), n_folds=len(fr), sec=prev.get("sec", 0) + time.time() - t0)
+    print(f"[{args.tag}] RMSE {res['mean']:.3f} +/- {res['std']:.3f} over {len(fr)} folds")
+    np.save(fo, oof[:max(int(k) for k in folds) // 5 + 1])
+    parts = sorted(PART.glob(f"{args.tag}_test_f*.npy"))
+    if parts: np.save(C / "oof" / f"cnn_{args.tag}_test.npy", np.mean([np.load(q) for q in parts], 0))
+    json.dump(res, open(fj, "w"), indent=1)
