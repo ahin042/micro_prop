@@ -1,0 +1,23 @@
+# ===== 대회 제공 데이터: 재배포/공개 금지 (train/test 이미지, train.csv, sample_submission.csv) =====
+data/
+
+# ===== 제출 파일 / 예측값: 공개 시 다른 참가자에게 사실상 정답 공유 (Private Sharing 위험) =====
+submissions/
+
+# ===== 파생 산출물: 데이터에서 계산된 특징·썸네일·OOF/테스트 예측 (재생성 가능) =====
+cache/
+reports/*.png
+reports/*.parquet
+reports/stage0*.md
+
+# ===== 사전학습 가중치: timm 이 자동 다운로드(Apache-2.0). 용량 큼 → 저장소에 포함하지 않음 =====
+weights/
+
+# ===== 환경 / IDE / 임시 =====
+.venv/
+.idea/
+__pycache__/
+*.pyc
+.DS_Store
+src/cnn_new.py
+src/*.tmp
