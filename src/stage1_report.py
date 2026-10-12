@@ -5,12 +5,12 @@ import numpy as np
 import pandas as pd
 from scipy import stats
 
-from common import C, CHEAP, REP, cv, lgbm, load_meta, ridge, splits, write_sub
+from common import C, CHEAP, REP, cv, design, lgbm, load_meta, ridge, splits, write_sub
 
 M, itr, ite, y = load_meta()
 F = pd.read_parquet(C / "features.parquet").set_index("ID").loc[M.ID].reset_index()
 FEAT = [c for c in F.columns if c.startswith(("q_", "r_", "n_", "b_"))]
-X = F[FEAT].values[itr].astype(float)
+FM = pd.concat([F[FEAT], M[CHEAP]], axis=1); X = design(F, FEAT)[itr]
 BLUR = ["q_crete_blur", "q_lapvar_dn", "r_blur_r0.01"]
 rs = lambda a, b: stats.spearmanr(a, b)[0]
 T = pd.DataFrame({"rho_y": [rs(F[c].values[itr], y) for c in FEAT],
@@ -28,13 +28,13 @@ top = T.reindex(T.rho_y.abs().sort_values(ascending=False).index)
 print("\n== S5 top 15 |rho_y| ==\n", top.head(15)[["rho_y", "rho_blur_max", "rho_noise", "blur_dominated"]].round(3).to_string())
 print(f"\nblur-dominated (excluding q_*): {int(T.blur_dominated.sum())}/{len(FEAT)}:", T.index[T.blur_dominated].tolist())
 
-sp = splits(len(y)); Xc = M[CHEAP].values[itr]; res = {}
-for name, Z in [("stage1", X), ("stage1+cheap", np.hstack([X, Xc]))]:
+sp = splits(len(y)); res = {}
+for name, Z in [("stage1", X), ("stage1+cheap", design(FM, FEAT + CHEAP)[itr])]:
     for mn, fn in [("ridge", ridge), ("lgbm", lgbm)]:
         r = cv(fn, Z, y, sp); res[f"{mn}_{name}"] = r
         print(f"  {mn}_{name:14s} RMSE {r['mean']:.3f} +/- {r['std']:.3f}  R2 {r['r2']:+.3f}")
         np.save(C / "oof" / f"s1_{mn}_{name}_oof.npy", r["oof"])
-Xall = np.hstack([F[FEAT].values.astype(float), M[CHEAP].values]); pt = lgbm(Xall[itr], y, Xall[ite])
+Xall = design(FM, FEAT + CHEAP); pt = lgbm(Xall[itr], y, Xall[ite])
 np.save(C / "oof" / "002_s1_lgbm_test.npy", pt); write_sub(pt, M.ID.values[ite], "002_s1_lgbm.csv", y)
 T.to_csv(REP / "stage1_feature_rho.csv")
 json.dump({k: {m: v[m] for m in ("mean", "std", "r2")} for k, v in res.items()}, open(REP / "stage1_cv.json", "w"), indent=1)

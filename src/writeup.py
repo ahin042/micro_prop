@@ -79,18 +79,37 @@ story = [Paragraph("Microstructure → hardness: a measurement-bias diagnosis", 
               f"does not help ({ce['clean_structural|pca-white95']['top1%']:.1f}). The best model's residual (sd {ce['A3']['res_sd']:.1f}) is uncorrelated with every feature "
               f"(max |ρ| {ce['A3']['max_abs_rho_res_feat']:.2f}, none Bonferroni-significant) and unlearnable from them (CV R² {ce['A3']['residual_learnable_R2']:+.2f}). "
               f"Quadrant ICC of the predictive structural features is only {st['median_icc']:.2f}, so 128-px crops are not label-equivalent and the CNN trains on full images."),
-         Paragraph("4. Models (RMSE, mean ± sd over 15 folds)", H2)]
+         Paragraph("4. CNN", H2),
+         para(f"Backbones: timm <font face='Courier'>resnet18.a1_in1k</font> and <font face='Courier'>efficientnet_b0.ra_in1k</font> (Apache-2.0), in_chans=1, "
+              "one regression output, MSE on standardized y, AdamW (lr 3e-4, wd 1e-2), 40 epochs cosine with 1-epoch warm-up, batch 32, bf16 autocast (MPS), "
+              "EMA of weights (0.995), no early stopping on the reported fold. <b>Input = full 256×256 image</b>: the quadrant ICC of the predictive "
+              f"structural features is {st['median_icc']:.2f} (dark-pixel fraction {st['per_feature']['n_otsu_c0']['icc']:.2f}, grain diameter "
+              f"{st['per_feature']['n_ws_eqd_mean']['icc']:.2f}), so 128-px crops are not label-equivalent and no patch sampling is used. "
+              "Augmentation: D4 (all orientation features have |ρ<sub>y</sub>| < 0.07), Gaussian blur σ~U(0,2) and noise σ~U(0,20) each with p=0.5, "
+              "gamma [0.7,1.4], gain [0.7,1.3], offset ±0.08. <b>Inference is identical for OOF and test</b>: one function scores the full image under the "
+              "8 D4 transforms with the EMA weights and averages the de-standardized outputs."),
+         table([["config (15 folds each)", "CV RMSE", "train RMSE*", "aug / norm"]] +
+               [[k, f3(v), f"{np.mean([f['train_rmse'] for f in v['folds'].values() if 'train_rmse' in f]):.2f}" if any('train_rmse' in f for f in v['folds'].values()) else "–",
+                 f"{'+'.join(v['aug']) or 'none'} / {v['config'].get('norm')}"] for k, v in sorted(cnn.items(), key=lambda kv: kv[1]['mean']) if v.get('n_folds', len(v['fold_rmse'])) == 15],
+               [5.2 * cm, 3.0 * cm, 2.4 * cm, 5.4 * cm]),
+         para("<i>*</i> clean (no augmentation) RMSE of the EMA model on its own training fold, repeats 2–3; the gap to CV RMSE measures overfitting."),
+         Paragraph("5. Models and final blend (RMSE, mean ± sd over 15 folds)", H2)]
 rows = [["model", "CV RMSE", "R²"], ["constant mean", f3(bc["const"]), f"{bc['const']['r2']:+.3f}"],
         ["Ridge, 28 cheap global stats", f3(bc["ridge_cheap"]), f"{bc['ridge_cheap']['r2']:+.3f}"],
         ["LightGBM, cheap stats", f3(bc["lgbm_cheap"]), f"{bc['lgbm_cheap']['r2']:+.3f}"],
         ["LightGBM, 114 Stage-1 + cheap", f3(s1["lgbm_stage1+cheap"]), f"{s1['lgbm_stage1+cheap']['r2']:+.3f}"],
         ["LightGBM, + blur-corrected (m_/d_/x_)", f3(pb["cv"]["lgbm"]), f"{pb['cv']['lgbm']['r2']:+.3f}"],
         ["best enumerated closed-form formula", f"{s2['T2_top'][0][1]:.3f}", "–"]]
-for k, v in cnn.items():
-    if len(v["fold_rmse"]) == 15: rows.append([f"CNN {k} (full 5×3)", f3(v), "–"])
-for k, v in bl.items():
-    if k.startswith(("eq(", "nnls_cf(")): rows.append([f"blend {k}", f3(v), f"Δ vs 003 {v['d_vs_003']:+.3f} (p {v['p']:.2g})"])
-story += [table(rows, [8.2 * cm, 3.2 * cm, 4.6 * cm]), Spacer(1, 6),
+for k, v in sorted(cnn.items(), key=lambda kv: kv[1]["mean"])[:2]:
+    if v.get("n_folds", len(v["fold_rmse"])) == 15: rows.append([f"CNN {k}", f3(v), "–"])
+rows.append(["submission 003 = eq(ridge_cheap + lgbm_s1)", f3(bl["eq(ridge_cheap+lgbm_s1)"]) if "eq(ridge_cheap+lgbm_s1)" in bl else "14.354", "reference"])
+if "_selected" in bl:
+    s = bl["_selected"]; v = bl[s["name"]]
+    rows.append([Paragraph(f"<b>final blend 004</b>: {s['name']}", P), f3(v), f"Δ {v['d_vs_003']:+.3f}, p {v['p']:.2g}, {v['wins']}/15 folds"])
+    story_w = para("Final blend weights (fit on pooled OOF): " + ", ".join(f"{k} {w}" for k, w in s["weights"].items()) + ".")
+else:
+    story_w = Spacer(1, 1)
+story += [table(rows, [8.2 * cm, 3.2 * cm, 4.6 * cm]), Spacer(1, 4), story_w, Spacer(1, 6),
           para("Reproduction: <font face='Courier'>python src/run.py --mode full</font>. Environment, pinned versions and licenses: README.md. "
                "Every experiment with its CV number: experiments.md.")]
 SimpleDocTemplate(str(REP / "solution_outline.pdf"), pagesize=A4, leftMargin=1.8 * cm, rightMargin=1.8 * cm, topMargin=1.5 * cm, bottomMargin=1.5 * cm,

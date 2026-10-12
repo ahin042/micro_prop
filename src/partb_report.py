@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 from scipy import stats
 
-from common import C, CHEAP, REP, cv, lgbm, load_meta, ridge, splits
+from common import C, CHEAP, REP, cv, design, lgbm, load_meta, ridge, splits
 
 M, itr, ite, y = load_meta()
 F = pd.read_parquet(C / "features.parquet").set_index("ID").loc[M.ID].reset_index()
@@ -26,10 +26,10 @@ print(T[["old_rho_y", "old_rho_blur_max", "new_rho_y", "new_rho_blur_max", "new_
 A = pd.DataFrame({c: row(c) for c in NEW}).T; A["breaks"] = A.rho_y.abs() > A.rho_blur_max
 print(f"\nnew features breaking blur domination: {int(A.breaks.sum())}/{len(NEW)} ->", A[A.breaks].rho_y.round(3).sort_values(key=abs, ascending=False).to_dict())
 
-sp = splits(len(y)); Xc = M[CHEAP].values[itr]; base = np.load(C / "oof" / "s1_lgbm_stage1+cheap_oof.npy"); res = {}
+sp = splits(len(y)); FM = pd.concat([F[S1 + NEW], M[CHEAP]], axis=1); base = np.load(C / "oof" / "s1_lgbm_stage1+cheap_oof.npy"); res = {}
 fr = lambda o: np.array([np.sqrt(np.mean((o[i // 5, b] - y[b]) ** 2)) for i, (a, b) in enumerate(sp)])
 for mn, fn in [("ridge", ridge), ("lgbm", lgbm)]:
-    r = cv(fn, np.hstack([F[S1 + NEW].values[itr].astype(float), Xc]), y, sp); d = fr(r["oof"]) - fr(base)
+    r = cv(fn, design(FM, S1 + NEW + CHEAP)[itr], y, sp); d = fr(r["oof"]) - fr(base)
     res[mn] = dict(mean=r["mean"], std=r["std"], r2=r["r2"], d_vs_14574=float(d.mean()), p=float(stats.ttest_1samp(d, 0).pvalue), wins=int((d < 0).sum()))
     np.save(C / "oof" / f"b_{mn}_s1+cheap+new_oof.npy", r["oof"])
     print(f"  {mn} stage1+cheap+new: RMSE {r['mean']:.3f} +/- {r['std']:.3f}  R2 {r['r2']:.3f} | vs lgbm s1+cheap 14.574: d {d.mean():+.3f} p {res[mn]['p']:.3g} wins {res[mn]['wins']}/15")

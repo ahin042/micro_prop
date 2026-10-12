@@ -5,10 +5,10 @@ import numpy as np
 import pandas as pd
 from sklearn.neighbors import KNeighborsRegressor
 
-from common import C, CHEAP, REP, SEED, cv, dist, lgbm, load_meta, ridge, splits, target, write_sub
+from common import C, CHEAP, REP, SEED, cv, design, dist, lgbm, load_meta, ridge, splits, target, write_sub
 
 M, itr, ite, y = load_meta()
-X, Xte = M[CHEAP].values[itr], M[CHEAP].values[ite]
+Xa = design(M, CHEAP); X, Xte = Xa[itr], Xa[ite]
 sp = splits(len(y)); res = {}
 
 # P1: anchor table (const / ridge / kNN reproduce stage0.json exactly; LightGBM added)

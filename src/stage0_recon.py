@@ -16,7 +16,8 @@ from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
 
 ROOT = Path(__file__).resolve().parent.parent
-D, C, REP = ROOT / "data", ROOT / "cache", ROOT / "reports"
+OUT = ROOT / os.environ.get("HARDNESS_OUT", ".")                 # output root (overridden only for reproducibility double-runs)
+D, C, REP = ROOT / "data", OUT / "cache", OUT / "reports"
 SEED, N, PCTS = 42, 256, [1, 5, 25, 50, 75, 95, 99]
 RIDX = np.hypot(*(np.indices((N, N)) - N // 2)).astype(int); RCNT = np.bincount(RIDX.ravel())  # radius per fftshift-ed bin
 EDGES = [1, 2, 4, 8, 16, 32, 64, 96, 129]                     # 8 radial FFT bands

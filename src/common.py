@@ -1,4 +1,5 @@
-"""Shared paths, CV protocol, target transforms and models (all seeds fixed)."""
+"""Shared paths, CV protocol, target transforms, models and submission I/O (deterministic: all seeds fixed, 1 LightGBM thread)."""
+import hashlib, os
 from pathlib import Path
 
 import lightgbm as lgb
@@ -12,13 +13,30 @@ from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
 
 ROOT = Path(__file__).resolve().parent.parent
-D, C, REP, SUB = ROOT / "data", ROOT / "cache", ROOT / "reports", ROOT / "submissions"
+OUT = ROOT / os.environ.get("HARDNESS_OUT", ".")                 # output root (overridden only for reproducibility double-runs)
+D, C, REP, SUB = ROOT / "data", OUT / "cache", OUT / "reports", OUT / "submissions"
 SEED = 42
 CHEAP = [f"pct{q}" for q in [1, 5, 25, 50, 75, 95, 99]] + [f"band{k}" for k in range(8)] + [
     "mean", "std", "skew", "kurt", "entropy", "n_levels", "gap_bins", "sat0", "sat255", "log_lapvar", "hf_std", "grad_mean", "fsize"]
+# Determinism lockdown: one thread (multi-threaded histogram sums are order-dependent across machines/thread counts),
+# deterministic=True, every LightGBM RNG seeded explicitly, and design matrices with alphabetically sorted columns
+# (feature_fraction samples columns BY POSITION, so column order changed the model; see src/recover_003.py).
 LGB_PARAMS = dict(objective="regression", learning_rate=0.03, num_leaves=15, min_data_in_leaf=20, feature_fraction=0.8,
-                  bagging_fraction=0.8, bagging_freq=1, lambda_l2=1.0, verbose=-1, num_threads=4, deterministic=True,
+                  bagging_fraction=0.8, bagging_freq=1, lambda_l2=1.0, verbose=-1, num_threads=1, deterministic=True,
                   force_row_wise=True)
+
+
+def lgb_seeds(s):
+    return dict(seed=s, bagging_seed=s + 1, feature_fraction_seed=s + 2, data_random_seed=s + 3)
+
+
+def design(df, cols):
+    """Canonical design matrix: columns sorted by name, so no model depends on parquet column order."""
+    return df[sorted(cols)].to_numpy(dtype=float)
+
+
+def sha256(path):
+    return hashlib.sha256(Path(path).read_bytes()).hexdigest()
 
 
 def load_meta(path=C / "stage0_meta.parquet"):
@@ -56,10 +74,10 @@ def ridge(Xtr, ytr, Xte):
 def lgbm(Xtr, ytr, Xte, seeds=(0, 1, 2), params=LGB_PARAMS):
     """Rounds chosen by inner 5-fold lgb.cv on the training data only; then seed-averaged refit."""
     ds = lgb.Dataset(Xtr, ytr, free_raw_data=False)
-    h = lgb.cv(dict(params, seed=SEED), ds, num_boost_round=3000, nfold=5, stratified=False, seed=SEED,
+    h = lgb.cv(dict(params, **lgb_seeds(SEED)), ds, num_boost_round=3000, nfold=5, stratified=False, seed=SEED,
                callbacks=[lgb.early_stopping(200, verbose=False)])
     nr = len(next(iter(h.values())))
-    return np.mean([lgb.train(dict(params, seed=s), ds, num_boost_round=nr).predict(Xte) for s in seeds], 0)
+    return np.mean([lgb.train(dict(params, **lgb_seeds(s)), ds, num_boost_round=nr).predict(Xte) for s in seeds], 0)
 
 
 def zn(X):
@@ -86,5 +104,9 @@ def write_sub(pred_test, ids_test, name, y_train):
     out = pd.DataFrame({ss.columns[0]: ss.ID.values, ss.columns[1]: s.values})
     assert len(out) == len(ss) == 1000 and out.iloc[:, 1].notna().all() and (out.ID.values == ss.ID.values).all()
     assert list(out.columns) == list(ss.columns)
-    SUB.mkdir(exist_ok=True); out.to_csv(SUB / name, index=False)
+    SUB.mkdir(parents=True, exist_ok=True); path, txt = SUB / name, out.to_csv(index=False)
+    if path.exists() and path.read_text(encoding="utf-8") != txt:     # never overwrite a different (possibly uploaded) file
+        path = SUB / "rerun" / name; path.parent.mkdir(exist_ok=True)
+        print(f"[write_sub] submissions/{name} exists with different content; wrote {path.relative_to(OUT)} instead")
+    path.write_text(txt, encoding="utf-8")
     return out

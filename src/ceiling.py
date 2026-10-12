@@ -19,7 +19,7 @@ T = pd.read_csv(REP / "stage1_feature_rho.csv", index_col=0)
 Q = [c for c in S1 if c.startswith("q_")]
 CLEAN = [c for c in S1 if not T.loc[c, "blur_dominated"] and c not in Q]
 BLURD = [c for c in S1 if T.loc[c, "blur_dominated"]]
-X = pd.concat([F[S1], M[CHEAP]], axis=1).iloc[itr].astype(float)
+X = pd.concat([F[S1], M[CHEAP]], axis=1).iloc[itr].astype(float); X = X[sorted(X.columns)]   # canonical column order
 gmd = 2 * np.sum((2 * np.arange(1, n + 1) - n - 1) * np.sort(y)) / (n * (n - 1))
 iu = np.triu_indices(n, 1); dy = np.abs(y[iu[0]] - y[iu[1]])
 

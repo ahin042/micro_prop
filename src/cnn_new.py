@@ -88,11 +88,11 @@ def train_one(a, b, seed):
     for ep in range(args.epochs):
         model.train(); ls = []; perm = torch.randperm(len(a), generator=torch.Generator().manual_seed(seed * 1000 + ep))
         for i in range(spe):
-            b = perm[i * args.bs:(i + 1) * args.bs]
-            if len(b) < 2: continue
-            xb = norm(augment(Xtr[a[b.numpy()]].float() / 255, g))
+            bi = perm[i * args.bs:(i + 1) * args.bs]                      # minibatch positions within a (b = val indices)
+            if len(bi) < 2: continue
+            xb = norm(augment(Xtr[a[bi.numpy()]].float() / 255, g))
             with torch.autocast(device_type=dev.type, dtype=torch.bfloat16):
-                loss = Fn.mse_loss(model(xb).float().squeeze(1), yt[b.to(dev)])
+                loss = Fn.mse_loss(model(xb).float().squeeze(1), yt[bi.to(dev)])
             opt.zero_grad(set_to_none=True); loss.backward(); opt.step(); sch.step(); step += 1; ls.append(loss.item())
             dcy = min(0.995, (1 + step) / (10 + step))
             with torch.no_grad():
