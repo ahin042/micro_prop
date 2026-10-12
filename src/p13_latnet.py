@@ -5,7 +5,7 @@ Inputs: the same clean images re-degraded with (blur, noise, contrast gain, brig
 nuisance distribution of the dirty half (only the missing amount is added: sigma_add = sqrt(target^2 - own^2)).
 (i) measurement accuracy on held-out clean images at fixed degradation levels vs the classical estimators re-run on the
     same degraded images; (ii) predicted latents for all 1500 images -> cache/p13/latnet_pred.parquet for downstream CV.
-Usage: python src/p13_latnet.py [--epochs 100] [--eval_only]
+Usage: python src/p13_latnet.py [--epochs 100] [--final_only] [--crossfit 5 --out latnet_cf_pred.parquet]
 """
 import argparse, json, math, time
 
@@ -22,6 +22,7 @@ from p13_descriptors import desc_array
 
 ap = argparse.ArgumentParser(); ap.add_argument("--epochs", type=int, default=100); ap.add_argument("--bs", type=int, default=32)
 ap.add_argument("--out", default="latnet_pred.parquet"); ap.add_argument("--final_only", action="store_true")
+ap.add_argument("--crossfit", type=int, default=0, help="K>0: cross-fitted predictions (clean train images get out-of-fold predictions)")
 args = ap.parse_args()
 torch.use_deterministic_algorithms(True, warn_only=True); torch.manual_seed(SEED); rng = np.random.default_rng(SEED)
 dev = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
@@ -104,6 +105,14 @@ def classical(a):
 
 
 if __name__ == "__main__":
+    if args.crossfit:                                                       # see src/p16_latnet2.py: removes the in-sample advantage of clean train images
+        fo = np.random.default_rng(SEED + 100).permutation(len(cl)) % args.crossfit
+        P, Pk = np.zeros((len(ids_all), K)), []
+        for k in range(args.crossfit):
+            t0 = time.time(); pk = predict(train(cl[fo != k]), IMG.float()); Pk.append(pk); P[cl[fo == k]] = pk[cl[fo == k]]
+            print(f"[crossfit fold {k}] trained on {(fo != k).sum()} clean images, {time.time() - t0:.0f}s", flush=True)
+        rest = np.setdiff1d(np.arange(len(ids_all)), cl); P[rest] = np.mean(Pk, 0)[rest]; P = P * sd_L + mu_L
+        pd.DataFrame(P, columns=[f"ln_{k}" for k in LAT]).assign(ID=ids_all).to_parquet(C / "p13" / args.out); print("wrote cache/p13/" + args.out); raise SystemExit
     if args.final_only:
         m = train(cl); P = predict(m, IMG.float()) * sd_L + mu_L
         pd.DataFrame(P, columns=[f"ln_{k}" for k in LAT]).assign(ID=ids_all).to_parquet(C / "p13" / args.out); print("wrote", args.out); raise SystemExit

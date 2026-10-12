@@ -1,12 +1,12 @@
 """Phase 16: degradation-robust latent estimator v2 (more pseudo-label images, 15 latents, 3-seed ensemble). Uses NO y.
 Same method as src/p13_latnet.py (Phase 13 / Part 3).
 
-Pseudo-labels: 10 latents measured by the classical pipeline on the cleanest train images.
+Pseudo-labels: 15 latents measured by the classical pipeline on the cleanest train images.
 Inputs: the same clean images re-degraded with (blur, noise, contrast gain, brightness) drawn jointly from the empirical
 nuisance distribution of the dirty half (only the missing amount is added: sigma_add = sqrt(target^2 - own^2)).
 (i) measurement accuracy on held-out clean images at fixed degradation levels vs the classical estimators re-run on the
-    same degraded images; (ii) predicted latents for all 1500 images -> cache/p13/latnet_pred.parquet for downstream CV.
-Usage: python src/p13_latnet.py [--epochs 100] [--eval_only]
+    same degraded images; (ii) predicted latents for all 1500 images -> cache/p16/latnet2_pred.parquet for downstream CV.
+Usage: python src/p16_latnet2.py [--final_only] [--crossfit 5 --out latnet2cf_pred.parquet]
 """
 import argparse, json, math, time
 
@@ -23,6 +23,7 @@ from p13_descriptors import desc_array
 
 ap = argparse.ArgumentParser(); ap.add_argument("--epochs", type=int, default=120); ap.add_argument("--bs", type=int, default=32)
 ap.add_argument("--out", default="latnet2_pred.parquet"); ap.add_argument("--seeds", type=int, default=3); ap.add_argument("--clean_q", type=float, default=.55); ap.add_argument("--final_only", action="store_true")
+ap.add_argument("--crossfit", type=int, default=0, help="K>0: cross-fitted predictions (clean train images get out-of-fold predictions)")
 args = ap.parse_args()
 torch.use_deterministic_algorithms(True, warn_only=True); torch.manual_seed(SEED); rng = np.random.default_rng(SEED)
 dev = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
@@ -108,6 +109,15 @@ def classical(a):
 
 
 if __name__ == "__main__":
+    if args.crossfit:                                                       # the final model memorises its own clean images (in-sample r ~0.94
+        fo = np.random.default_rng(SEED + 100).permutation(len(cl)) % args.crossfit   # vs ~0.85 held out); test images never get that.
+        P, Pk = np.zeros((len(ids_all), K)), []                             # clean train -> out-of-fold model; all other images -> mean of K
+        for k in range(args.crossfit):
+            t0 = time.time(); pk = predict(train(cl[fo != k], SEED + k), IMG.float()); Pk.append(pk); P[cl[fo == k]] = pk[cl[fo == k]]
+            print(f"[crossfit fold {k}] trained on {(fo != k).sum()} clean images, {time.time() - t0:.0f}s", flush=True)
+        rest = np.setdiff1d(np.arange(len(ids_all)), cl); P[rest] = np.mean(Pk, 0)[rest]; P = P * sd_L + mu_L
+        pd.DataFrame(P, columns=[f"ln2_{k}" for k in LAT]).assign(ID=ids_all, ln2_oof=np.isin(np.arange(len(ids_all)), cl)).to_parquet(C / "p16" / args.out)
+        print("wrote cache/p16/" + args.out); raise SystemExit
     if args.final_only:
         P = np.mean([predict(train(cl, SEED + s), IMG.float()) for s in range(args.seeds)], 0) * sd_L + mu_L
         pd.DataFrame(P, columns=[f"ln2_{k}" for k in LAT]).assign(ID=ids_all).to_parquet(C / "p16" / args.out); print("wrote", args.out); raise SystemExit
