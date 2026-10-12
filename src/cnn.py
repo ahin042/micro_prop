@@ -12,7 +12,7 @@ import torch
 import torch.nn.functional as Fn
 from PIL import Image
 
-from common import C, D, REP, SEED, load_meta, splits
+from common import C, D, REP, ROOT, SEED, load_meta, sha256, splits
 
 ap = argparse.ArgumentParser()
 ap.add_argument("--arch", default="resnet18"); ap.add_argument("--norm", default="global", choices=["global", "image"])
@@ -23,6 +23,11 @@ ap.add_argument("--folds", type=int, default=5); ap.add_argument("--seeds", type
 ap.add_argument("--tag", required=True); ap.add_argument("--no_test", action="store_true")
 args = ap.parse_args()
 AUG = {"full": {"d4", "blur", "noise", "photo"}, "none": set()}.get(args.aug, set(args.aug.split(",")))
+torch.use_deterministic_algorithms(True, warn_only=True)            # deterministic kernels wherever the backend has one
+WEIGHTS = {"resnet18": ("resnet18.a1_in1k", "80c49dee3da4822c009c5a7fe591e9223c5a2cfcf95a4067ca4dfb5a7b89c612"),
+           "efficientnet_b0": ("efficientnet_b0.ra_in1k", "d569899762ea9b1384ee07f4af64805cf8caa1c55f9253ebb1080dc40e87a2cd")}
+wf = ROOT / "weights" / f"{WEIGHTS[args.arch][0]}.safetensors"     # vendored timm checkpoint (identical to the HF hub file)
+OVL = dict(file=str(wf)) if wf.exists() and sha256(wf) == WEIGHTS[args.arch][1] else None
 dev = torch.device("mps" if torch.backends.mps.is_available() else "cuda" if torch.cuda.is_available() else "cpu")
 M, itr, ite, y = load_meta()
 load = lambda split, ids: torch.from_numpy(np.stack([np.asarray(Image.open(D / split / f"{i}.png")) for i in ids]))[:, None]
@@ -76,9 +81,9 @@ def predict(model, X, bs=50):
 
 
 def train_one(a, b, seed):
-    torch.manual_seed(seed); g = torch.Generator(device=dev); g.manual_seed(seed)
+    torch.manual_seed(seed); np.random.seed(seed); g = torch.Generator(device=dev); g.manual_seed(seed)
     mu, sd = y[a].mean(), y[a].std(); yt = torch.tensor((y[a] - mu) / sd, dtype=torch.float32, device=dev)
-    model = timm.create_model(args.arch, pretrained=True, in_chans=1, num_classes=1, drop_rate=0.1).to(dev)
+    model = timm.create_model(args.arch, pretrained=True, in_chans=1, num_classes=1, drop_rate=0.1, pretrained_cfg_overlay=OVL).to(dev)
     ema = timm.create_model(args.arch, pretrained=False, in_chans=1, num_classes=1).to(dev); ema.load_state_dict(model.state_dict())
     for p in ema.parameters(): p.requires_grad_(False)
     opt = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=1e-2)

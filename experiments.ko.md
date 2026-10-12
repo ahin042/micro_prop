@@ -1,3 +1,5 @@
+> **Frozen snapshot (2026-10-12 14:00 KST). No longer maintained — the canonical, up-to-date log is [experiments.md](experiments.md) (English).**
+
 # 실험 로그
 
 언어: [English](experiments.md) | 한국어 | [日本語](experiments.ja.md)
