@@ -1,0 +1,28 @@
+{
+ "note": "CV = RepeatedKFold(5x3, seed 42) fold-mean RMSE. CV->LB offset: 003 14.355 -> 13.2852 (-1.07); 004 13.529 -> 12.3733 (-1.156). Fill 'lb' after each manual upload.",
+ "submissions": [
+  {
+   "file": "003_recovered.csv",
+   "sha256": "2ffe88bf6df976d4e111c8c73392a94c4758aab4e302dd40332e798ee80fd48a",
+   "cv": 14.355,
+   "lb": 13.2852,
+   "uploaded": "2026-10-12 (first upload of 003, byte-identical)"
+  },
+  {
+   "file": "003_blend_ridge_cheap_lgbm_s1.csv (regenerated 11:27, column-order variant)",
+   "sha256": "34ed3d62e43bb59116b571b57967c2797d534934faf591e6f929ffd23f475890",
+   "cv": 14.354,
+   "lb": 13.3237,
+   "uploaded": "2026-10-12"
+  },
+  {
+   "file": "004_cnn_r18_d4bn_plus_ridge_desc_latnet.csv",
+   "sha256": "1cabcbcfcd2b8ac0b094d224a380611172d4c15a247b961b491ce9f53e8fd1b8",
+   "cv": 13.529,
+   "expected_lb": 12.46,
+   "lb": 12.3733,
+   "recipe": "0.5 * CNN(resnet18, D4+blur+noise, global norm, 15 folds) + 0.5 * Ridge(S1+cheap+phase+pixphase+coherence+desc+latent-net)",
+   "reproducible": "byte-identical from independent CNN and latent-net re-runs"
+  }
+ ]
+}

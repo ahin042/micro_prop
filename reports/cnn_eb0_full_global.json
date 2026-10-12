@@ -1,0 +1,32 @@
+{
+ "config": {
+  "arch": "efficientnet_b0",
+  "norm": "global",
+  "aug": "full",
+  "epochs": 40,
+  "bs": 32,
+  "lr": 0.0003,
+  "repeats": 1,
+  "folds": 5,
+  "seeds": 1,
+  "tag": "eb0_full_global",
+  "no_test": true
+ },
+ "aug": [
+  "blur",
+  "d4",
+  "noise",
+  "photo"
+ ],
+ "device": "mps",
+ "fold_rmse": [
+  18.14262969996022,
+  16.300292192025505,
+  15.429356034739905,
+  16.06817649701592,
+  17.405406109342806
+ ],
+ "mean": 16.669172106616873,
+ "std": 0.9744259635687064,
+ "sec": 1568.585146188736
+}

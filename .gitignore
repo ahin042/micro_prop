@@ -21,3 +21,9 @@ __pycache__/
 .DS_Store
 src/cnn_new.py
 src/*.tmp
+.env
+*.log
+data/
+cache/
+weights/
+submissions/*.csv

@@ -2,6 +2,8 @@
 independently; nothing is fitted on test), then Ridge under the shared RepeatedKFold(5x3, seed 42).
 Embedding = [CLS, mean, std] of the patch tokens of the last N blocks (ViT) or [GAP, std] of the last stages (CNN), at
 one or more input sizes. Weights: vendored in weights/ (sha256 in src/cnn2.py / weights/MANIFEST_p17.json).
+Pre-declared candidate set (user decision, Phase 17): DINOv2 {Small, Base, Large}, frozen only, all reported; sizes 126/168/224/252/448
+reported for each, 252 (~1:1 with the 256 px images) declared primary before the Base/Large runs.
 Usage: python src/p17_dino_probe.py --arch dinos --sizes 252,448 [--threads 4]
 """
 import argparse, json, time
@@ -19,7 +21,8 @@ ap = argparse.ArgumentParser(); ap.add_argument("--arch", default="dinos"); ap.a
 ap.add_argument("--blocks", type=int, default=4); ap.add_argument("--threads", type=int, default=4); ap.add_argument("--device", default="cpu")
 args = ap.parse_args(); torch.set_num_threads(args.threads); torch.manual_seed(42)
 WTS = json.load(open(ROOT / "weights" / "MANIFEST_p17.json"))
-ARCH = {"dinos": ("vit_small_patch14_dinov2", "vit_small_patch14_dinov2.lvd142m"), "cnxt": ("convnext_tiny", "convnext_tiny.fb_in22k_ft_in1k"),
+ARCH = {"dinos": ("vit_small_patch14_dinov2", "vit_small_patch14_dinov2.lvd142m"), "dinob": ("vit_base_patch14_dinov2", "vit_base_patch14_dinov2.lvd142m"),
+        "dinol": ("vit_large_patch14_dinov2", "vit_large_patch14_dinov2.lvd142m"), "cnxt": ("convnext_tiny", "convnext_tiny.fb_in22k_ft_in1k"),
         "r50tv2": ("resnet50", "resnet50.tv2_in1k"), "ev2s": ("tf_efficientnetv2_s", "tf_efficientnetv2_s.in21k_ft_in1k")}[args.arch]
 wf = ROOT / "weights" / f"{ARCH[1]}.safetensors"; assert sha256(wf) == WTS[ARCH[1]]["sha256"]
 dev = torch.device(args.device); M, itr, ite, y = load_meta(); ids = M.ID.values
