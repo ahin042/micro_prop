@@ -3,7 +3,7 @@ vs the 004 recipe and 003; optional submission. No blend weights are fitted (equ
 the pre-declared DINOv2 backbone choice, reported in reports/p17_probe_*.json.
 --ln p13/latnet_cf_pred.parquet = honest variant: the latent-net features of the clean train images are cross-fitted (out-of-fold), so
 they are as noisy as the test features (the final latent net memorises its own training images; see experiments.md, Phase 16).
-Selection rule vs 004: d <= 0 and (p < .1 or >= 8/15 fold wins). Expected LB = CV - 1.16 (reports/lb_tracking.json).
+Selection rule vs 004: d <= 0 and (p < .1 or >= 8/15 fold wins). Expected LB = CV - 1.17 (reports/lb_tracking.json, gaps of 004/005).
 Usage: python src/p17_build.py --cnn r18_final_a [--cnn r18up2_final:full] --dino dinos:252 [--ln p13/latnet_cf_pred.parquet] [--no_feat] [--name 00x_....csv]
 """
 import argparse, json
@@ -46,8 +46,8 @@ b003 = fr(np.load(C / "oof" / "003_recovered_oof.npy")); res = {}
 for k, v in refs.items(): print(f"  reference {k:22s} {v.mean():.3f} ± {v.std():.3f}")
 blend_o = np.mean([o for o, _ in comp.values()], 0); blend_t = np.mean([t for _, t in comp.values()], 0)
 for nm, o in list((k, v[0]) for k, v in comp.items()) + [("BLEND eq(" + ", ".join(comp) + ")", blend_o)]:
-    f = fr(o); r = res[nm] = dict(mean=float(f.mean()), std=float(f.std()), expected_lb=float(f.mean() - 1.16), d_vs_003=float((f - b003).mean()), vs={})
-    line = f"  {nm:58s} {r['mean']:.3f} ± {r['std']:.3f} (exp. LB {r['expected_lb']:.2f})"
+    f = fr(o); r = res[nm] = dict(mean=float(f.mean()), std=float(f.std()), expected_lb=float(f.mean() - 1.17), d_vs_003=float((f - b003).mean()), vs={})
+    line = f"  {nm:58s} {r['mean']:.3f} ± {r['std']:.3f} (exp. LB {r["expected_lb"]:.2f})"
     for k, rf in refs.items():
         d = f - rf; p_ = float(stats.ttest_1samp(d, 0).pvalue) if np.abs(d).sum() else 1.0; w = int((d < 0).sum())
         ok = bool(d.mean() <= 0 and (p_ < .1 or w >= 8)); r["vs"][k] = dict(d=float(d.mean()), p=p_, wins=w, passes_rule=ok)

@@ -40,6 +40,20 @@
    "note": "test preds with cross-fit LN vs the file: corr 0.99994, mean |diff| 0.09 HV -> file kept as is",
    "gap": -1.1813,
    "uploaded": "2026-10-12"
+  },
+  {
+   "file": "006_eq3_cnn_r18up2full_ridge004_dinov2s.csv",
+   "sha256": "fdf9427587b3a7c29f48419e8fd6c3de3b021e8e9c2de5667b19d69e9eab9476",
+   "cv": 12.988,
+   "cv_honest_crossfit_ln": 12.987,
+   "expected_lb": 11.82,
+   "lb": 12.0015006467,
+   "recipe": "mean of CNN r18a1 2x-upsampled (OOF: 15 folds; test: 5 full-data seeds), Ridge[004 features], Ridge[frozen DINOv2-S @252]",
+   "selection_rule": "PASS vs 004 (d -0.542, p 8.4e-07, 15/15) and vs 005 (d -0.125, p 0.002, 13/15)",
+   "fallback": "004 (DINOv2-free)",
+   "gap": -0.9865,
+   "uploaded": "2026-10-12",
+   "note": "LB WORSE than 005 (+0.070) despite CV -0.125: under investigation"
   }
  ],
  "calibration": {
@@ -53,6 +67,7 @@
    -1.0697,
    -1.1561,
    -1.1813
-  ]
+  ],
+  "gap_006": -0.9865
  }
 }

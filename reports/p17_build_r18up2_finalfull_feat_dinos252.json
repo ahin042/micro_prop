@@ -1,0 +1,68 @@
+{
+ "components": [
+  "cnn[r18up2_final:full]",
+  "ridge004",
+  "dino[dinos:252]"
+ ],
+ "ln": "p13/latnet_pred.parquet",
+ "cv": {
+  "cnn[r18up2_final:full]": {
+   "mean": 13.668748082704356,
+   "std": 1.0178894768526936,
+   "expected_lb": 12.508748082704356,
+   "d_vs_003": -0.6861603202301608,
+   "vs": {
+    "004 as reported": {
+     "d": 0.13936568140699776,
+     "p": 0.17216218269561984,
+     "wins": 6,
+     "passes_rule": false
+    }
+   }
+  },
+  "ridge004": {
+   "mean": 13.744634721945703,
+   "std": 1.0444192539486803,
+   "expected_lb": 12.584634721945703,
+   "d_vs_003": -0.6102736809888166,
+   "vs": {
+    "004 as reported": {
+     "d": 0.21525232064834193,
+     "p": 0.005413918202272792,
+     "wins": 3,
+     "passes_rule": false
+    }
+   }
+  },
+  "dino[dinos:252]": {
+   "mean": 13.312407859031005,
+   "std": 0.8820711886792033,
+   "expected_lb": 12.152407859031005,
+   "d_vs_003": -1.0425005439035122,
+   "vs": {
+    "004 as reported": {
+     "d": -0.21697454226635363,
+     "p": 0.2092487691729305,
+     "wins": 10,
+     "passes_rule": true
+    }
+   }
+  },
+  "BLEND eq(cnn[r18up2_final:full], ridge004, dino[dinos:252])": {
+   "mean": 12.98755937188846,
+   "std": 0.9659971550330193,
+   "expected_lb": 11.82755937188846,
+   "d_vs_003": -1.3673490310460559,
+   "vs": {
+    "004 as reported": {
+     "d": -0.5418230294088973,
+     "p": 9.560262456701986e-07,
+     "wins": 15,
+     "passes_rule": true
+    }
+   }
+  }
+ },
+ "file": "006_eq3_cnn_r18up2full_ridge004_dinov2s.csv",
+ "sha256": "fdf9427587b3a7c29f48419e8fd6c3de3b021e8e9c2de5667b19d69e9eab9476"
+}
