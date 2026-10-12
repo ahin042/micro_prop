@@ -62,7 +62,7 @@ if __name__ == "__main__":
     for a_, c in zip(ax, ["size", "aspect", "align"]):
         s = a_.scatter(LAT.fdark[clean], y[clean], c=LAT[c][clean], s=12, cmap="viridis"); plt.colorbar(s, ax=a_, label=c)
         a_.set(xlabel="dark-phase fraction (abs20)", ylabel="hardness y", title=f"clean half, colour = {c}")
-    fig.tight_layout(); fig.savefig(REP / "p13" / "y_vs_fdark.png", dpi=95)
+    (REP / "p13").mkdir(parents=True, exist_ok=True); fig.tight_layout(); fig.savefig(REP / "p13" / "y_vs_fdark.png", dpi=95)
     Z = LAT[clean].values; yy = y[clean]; res = {}
     models = {"linear (ridge)": make_pipeline(StandardScaler(), RidgeCV(np.logspace(-2, 4, 25))),
               "additive splines (GAM-like)": make_pipeline(StandardScaler(), SplineTransformer(n_knots=5, degree=3), RidgeCV(np.logspace(-1, 4, 25))),

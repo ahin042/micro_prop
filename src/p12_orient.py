@@ -48,8 +48,8 @@ if __name__ == "__main__":
     P = pd.read_parquet(C / "p12" / "pixphase.parquet").set_index("ID").loc[M.ID.values[itr]].reset_index()
     S1 = sorted(c for c in F.columns if c[:2] in ("q_", "r_", "n_", "b_")); PH = [c for c in G.columns if c.startswith("ph_")]; PX = [c for c in P.columns if c.startswith("px_")]
     base = pd.concat([F[S1], G[PH], P[PX]], axis=1); base = base.fillna(base.median())
-    sp = splits(len(y)); res = {}
-    for nm, Z in [("orient", O[cols].values), ("s1+phase+pix", base.values), ("s1+phase+pix+orient", np.hstack([base.values, O[cols].values]))]:
+    sp = splits(len(y)); res = {}; Oc = O[cols].fillna(O[cols].median()).values            # or_acf_c/s are NaN on 78 images (flat ACF)
+    for nm, Z in [("orient", Oc), ("s1+phase+pix", base.values), ("s1+phase+pix+orient", np.hstack([base.values, Oc]))]:
         for mn, fn in [("ridge", ridge), ("lgbm", lgbm)]:
             o = cv(fn, Z.astype(float), y, sp); res[f"{mn}_{nm}"] = (o["mean"], o["std"], o["r2"]); np.save(C / "p12" / f"oof_{mn}_{nm}.npy", o["oof"])
             print(f"  {mn}_{nm}: {o['mean']:.3f} +/- {o['std']:.3f}  R2 {o['r2']:.3f}", flush=True)
