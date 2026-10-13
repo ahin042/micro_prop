@@ -5,7 +5,7 @@ and more backbones (vendored in weights/, sha256-checked):
 Same RepeatedKFold(5x3, seed 42) image folds as every other model; OOF saved as (n_repeats, n) for blending.
 No early stopping on the reported fold (that would leak): fixed cosine schedule, final EMA weights, D4 TTA.
 """
-import argparse, json, math, time
+import argparse, gc, json, math, time
 
 import numpy as np
 import timm
@@ -129,6 +129,8 @@ if args.full:                                                           # full-d
     for s in range(args.full):
         t0 = time.time(); model, mu, sd, _ = train_one(allidx, allidx[:50], SEED + 100 + s); tv.append(predict(model, Xte) * sd + mu)
         np.save(C / "oof" / f"cnn_{args.tag}_full_test.npy", np.mean(tv, 0)); print(f"[{args.tag}] full-data seed {s} done ({time.time() - t0:.0f}s)", flush=True)
+        del model; gc.collect()                                            # free this seed before the next one (MPS OOM otherwise); numerics unchanged
+        if dev.type == "mps": torch.mps.empty_cache()
     raise SystemExit
 
 # OOF and test use the SAME predict(): full 256x256 image, 8 D4 transforms, mean of de-standardized outputs, EMA weights

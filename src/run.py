@@ -41,12 +41,13 @@ if __name__ == "__main__":
     plan = list(STEPS)
     if a.mode == "full":
         plan += [CNN]                                                       # always: 004's CNN is also the reference in every paired test
-        plan += [UP2 + ["--reps", "0,1,2", "--no_test"], UP2 + ["--full", "5"]] if "006" in want else []
     else:                                                                   # reuse the verified CNN arrays under the canonical tags
         (OUT / "cache" / "oof").mkdir(parents=True, exist_ok=True)
         for src, dst in FAST:
             if not (OUT / "cache" / "oof" / dst).exists(): shutil.copyfile(ROOT / "cache" / "oof" / src, OUT / "cache" / "oof" / dst)
-    plan += [B004] + ([DINO] if want & {"005", "006"} else []) + ([B005] if "005" in want else []) + ([B006] if "006" in want else [])
+    plan += [B004] + ([DINO] if want & {"005", "006"} else []) + ([B005] if "005" in want else [])    # 004/005 never wait on the 006 CNN
+    if "006" in want:
+        plan += ([UP2 + ["--reps", "0,1,2", "--no_test"], UP2 + ["--full", "5"]] if a.mode == "full" else []) + [B006]
     env = {**os.environ, "HF_HUB_OFFLINE": "1", "PYTORCH_MPS_HIGH_WATERMARK_RATIO": "0.6", "PYTORCH_MPS_LOW_WATERMARK_RATIO": "0.5"}  # MPS memory cap (16 GB machine)
     for s in plan:
         t0 = time.time(); print(f"\n>>> {' '.join(s)}", flush=True)
