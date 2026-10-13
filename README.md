@@ -64,12 +64,30 @@ pretrained config; they agree for every file). "Screening only" weights were eva
 To restore `weights/`: download `model.safetensors` from the listed repository at the listed commit and save it as
 `weights/<name>.safetensors` (the torchvision file as `weights/resnet18.tv_in1k.pth`).
 
-## Competition rules
+## Rule compliance
 
-- Python only, no remote APIs, every model runs locally.
-- No external data. Pretrained weights only (table above). No microstructure-pretrained models.
-- The test images are never used for training in any form. Per-image features and frozen embeddings are computed independently for each image. Every fitted object (scalers, Ridge, CNNs, the latent net, imputation medians) is fitted on training images only. The latent net learns from training images only (y-free pseudo-labels on the cleanest train images, re-degraded with blur/noise drawn from the train nuisance distribution).
-- Seeds are fixed and outputs are byte-reproducible (next section).
+Audit of 2026-10-13, covering every script that `run.py` runs.
+
+**(1) Pretrained weights.** The final candidates use exactly two files. Both licenses are verified in the model card at the pinned commit and in the upstream repository:
+
+| weights | used by | Hugging Face repo @ commit | license (model card / upstream) |
+|---|---|---|---|
+| `resnet18.a1_in1k` | 004, 005, 006 (CNN, latent net) | [timm/resnet18.a1_in1k](https://huggingface.co/timm/resnet18.a1_in1k) @ `491b427b45c9` | Apache-2.0 / Apache-2.0 ([pytorch-image-models](https://github.com/huggingface/pytorch-image-models)) |
+| `vit_small_patch14_dinov2.lvd142m` | 005, 006 (frozen embedding) | [timm/vit_small_patch14_dinov2.lvd142m](https://huggingface.co/timm/vit_small_patch14_dinov2.lvd142m) @ `4610ca143709` | Apache-2.0 / Apache-2.0 ([facebookresearch/dinov2](https://github.com/facebookresearch/dinov2)) |
+
+Downloaded for screening and not used by any candidate: DINOv2-Base and -Large, ConvNeXt-Tiny, EfficientNetV2-S and EfficientNet-B0 (Apache-2.0); ResNet50-tv2 and torchvision ResNet18 (BSD-3-Clause). None is gated or under a custom license. No DINOv3 and no microstructure-pretrained weights are used. The timm library itself is Apache-2.0.
+
+**(2) No remote APIs.** Every model runs locally, offline (`HF_HUB_OFFLINE=1`); weights are loaded from `./weights` with a SHA-256 check.
+
+**(3) No external data; test data is not used for training in any form.** Only the provided `train/` images and `train.csv` are used for fitting. Every place where test images enter the code is inference only:
+- Per-image features (`stage0_recon`, `features`, `p12_*`, `p13_descriptors`, `p13_structure`) are computed independently for each image. Any normalization uses that image's own statistics only.
+- The CNNs and the latent net are trained on training images only. Test images only pass through the trained models in eval mode (BatchNorm uses running statistics from training; no test-time adaptation). Test-time augmentation averages the 8 D4 views of the same image.
+- The global input normalization (mean and SD) is computed on training images; DINOv2 uses fixed ImageNet constants.
+- The latent net's pseudo-labels and its degradation pool come from training images only.
+- Missing-value imputation uses training-set medians. Scalers and Ridge, including the alpha selection, are fitted on training rows.
+- There is no pseudo-labeling, and no PCA, quantile transform or scaler is ever fitted on test data.
+- Diagnostics that read test images without feeding any model: Stage 0 train/test distribution tests and the duplicate search.
+- The only test-derived information used is the public-LB score of uploaded files, used to choose among submissions. No model or hyperparameter was tuned on it.
 
 ## Reproducibility
 
@@ -78,6 +96,15 @@ To restore `weights/`: download `model.safetensors` from the listed repository a
 - PyTorch: fixed seeds, `torch.use_deterministic_algorithms(True)`, fixed data order. Verified bitwise-identical re-runs on MPS: the ResNet18 CNN (15 folds, OOF and test), the latent net, and the 2x-upsampled CNN fold models (OOF and test, one run interrupted by machine sleep). The 006 full-data seeds are re-run in the full-mode check. CNN steps cap MPS memory (`PYTORCH_MPS_HIGH/LOW_WATERMARK_RATIO` = 0.6/0.5, set by `run.py`); this does not change the numerics.
 - Verified: `run.py --mode fast --target all` in an empty `HARDNESS_OUT` folder reproduces 004, 005 and 006 byte-identically. The full-mode check is recorded in `experiments.md`.
 - `submissions/001` and `003` were produced before the determinism lockdown. `src/recover_003.py` reproduces the uploaded 003 byte-identically; the regenerated 001 differs from the uploaded 001 and is not a candidate.
+
+## Expected differences on other hardware
+
+The byte-identical results above hold on the reference setup (Apple M5, macOS, PyTorch MPS, versions as listed). The CSVs store full float64 values, so on other hardware the SHA-256 will usually differ even when the predictions are practically identical. Compare by value instead (max |difference| and RMSE between the files).
+
+- **Features, Ridge, frozen DINOv2 embeddings (CPU).** Other CPUs and BLAS libraries change the floating-point summation order, so values move only in the last digits (relative differences around 1e-6 or smaller). LightGBM is deterministic and single-threaded but can still differ in the last bits across CPU architectures; it is only used for the 001/003 baselines.
+- **CNNs and the latent net (GPU).** CUDA or CPU kernels round differently from MPS, so the training trajectories diverge. The result behaves like a run with another random seed. From the seed-to-seed spread measured here (not measured on other hardware), expect per-image differences of a few tenths of an HV in the final blends and RMSE changes of a few hundredths.
+- **CUDA.** For deterministic kernels set `CUBLAS_WORKSPACE_CONFIG=:4096:8`. The MPS memory-cap variables set by `run.py` have no effect there.
+- **CPU only.** Everything runs, but the CNN steps take many hours.
 
 ## Pipeline (`src/`)
 
