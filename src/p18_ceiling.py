@@ -1,7 +1,8 @@
-"""Phase 18 / step 3: rough label-noise ceiling (train only, CPU).
+"""Phase 18 / step 3: label variation among nearest neighbours and error vs image quality (train only, CPU).
 
 (a) Variogram: semivariance g(d) = mean((y_i - y_j)^2) / 2 over clean training pairs, binned by distance d in a representation;
-    extrapolating to d -> 0 gives a nugget = label noise + whatever the representation does not capture (an UPPER bound on noise).
+    extrapolating to d -> 0 gives a nugget = label noise + whatever the representation does not capture: only an UPPER bound on
+    label noise given this representation (missing drivers look like noise there); the true noise level is unknown.
 (b) Error vs image quality: RMSE of the best blend's OOF by quality decile; the clean end bounds (noise + model error).
 """
 import json
