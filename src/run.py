@@ -8,6 +8,7 @@ Reference outputs (sha256 on the reference setup):
   004_cnn_r18_d4bn_plus_ridge_desc_latnet.csv  1cabcbcf...   0.5*CNN r18 + 0.5*Ridge[features + latent net]
   005_eq3_cnn_r18_ridge004_dinov2s.csv         d082a949...   mean(CNN r18, Ridge004, Ridge[frozen DINOv2-S])
   006_eq3_cnn_r18up2full_ridge004_dinov2s.csv  fdf94275...   mean(CNN r18 2x-upsampled [5 full-data seeds], Ridge004, Ridge[DINOv2-S])
+  007_eq3_dinov2s_ft_ridge004_dinov2s.csv      (Phase 19)    mean(DINOv2-S fine-tuned [15-fold-mean test], Ridge004, Ridge[DINOv2-S])
 Pipeline (all seeds fixed; pretrained weights loaded from ./weights, sha256-checked; no network needed):
   stage0_recon -> cheap global stats            features -> nuisance-aware features (+ blur-corrected variants)
   baseline_cheap / recover_003 -> 001 and the 003 baseline (reference for paired tests)
@@ -16,6 +17,7 @@ Pipeline (all seeds fixed; pretrained weights loaded from ./weights, sha256-chec
   cnn -> resnet18, D4+blur+noise, global norm, 15 folds               p13_build_004 -> 004
   p17_dino_probe -> frozen DINOv2-S embedding (inference only)        p17_build -> 005, 006
   cnn2 -> resnet18 with 2x input upsampling: 15-fold OOF (CV only) + 5 full-data seeds (test predictions of 006)
+  cnn3 -> DINOv2-S fine-tuned end-to-end (252 px, avg pool, layer-wise LR decay 0.75), 15 folds with test predictions (007)
 """
 import argparse, os, shutil, subprocess, sys, time
 from pathlib import Path
@@ -30,24 +32,30 @@ B004 = ["p13_build_004.py", "--cnn", "r18_final", "--feats", "p12_desc_ln", "--n
 DINO = ["p17_dino_probe.py", "--arch", "dinos", "--sizes", "252", "--threads", "4"]
 B005 = ["p17_build.py", "--cnn", "r18_final", "--dino", "dinos:252", "--ref_cnn", "r18_final", "--name", "005_eq3_cnn_r18_ridge004_dinov2s.csv"]
 B006 = ["p17_build.py", "--cnn", "r18up2_final:full", "--dino", "dinos:252", "--ref_cnn", "r18_final", "--name", "006_eq3_cnn_r18up2full_ridge004_dinov2s.csv"]
+FT = ["cnn3.py", "--tag", "x_dinos_ft_t", "--arch", "dinos", "--size", "252", "--pool", "avg", "--llrd", "0.75", "--lr", "1e-4", "--wd", "0.05",
+      "--aug", "d4,blur,noise", "--norm", "global", "--reps", "0,1,2"]
+B007 = ["p17_build.py", "--cnn", "x_dinos_ft_t", "--dino", "dinos:252", "--ref_cnn", "r18_final", "--name", "007_eq3_dinov2s_ft_ridge004_dinov2s.csv"]
 # cached CNN arrays reused by --mode fast: (source in ./cache/oof, name expected in the output root)
 FAST = [("cnn_r18_final_a_oof.npy", "cnn_r18_final_oof.npy"), ("cnn_r18_final_a_test.npy", "cnn_r18_final_test.npy"),
-        ("cnn_r18up2_final_oof.npy", "cnn_r18up2_final_oof.npy"), ("cnn_r18up2_final_full_test.npy", "cnn_r18up2_final_full_test.npy")]
+        ("cnn_r18up2_final_oof.npy", "cnn_r18up2_final_oof.npy"), ("cnn_r18up2_final_full_test.npy", "cnn_r18up2_final_full_test.npy"),
+        ("cnn_x_dinos_ft_t_oof.npy", "cnn_x_dinos_ft_t_oof.npy"), ("cnn_x_dinos_ft_t_test.npy", "cnn_x_dinos_ft_t_test.npy")]
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser(); ap.add_argument("--mode", default="full", choices=["full", "fast"])
-    ap.add_argument("--target", default="all", choices=["004", "005", "006", "all"]); a = ap.parse_args()
-    want = {"004", "005", "006"} if a.target == "all" else {a.target}
+    ap.add_argument("--target", default="all", choices=["004", "005", "006", "007", "all"]); a = ap.parse_args()
+    want = {"004", "005", "006", "007"} if a.target == "all" else {a.target}
     plan = list(STEPS)
     if a.mode == "full":
         plan += [CNN]                                                       # always: 004's CNN is also the reference in every paired test
     else:                                                                   # reuse the verified CNN arrays under the canonical tags
         (OUT / "cache" / "oof").mkdir(parents=True, exist_ok=True)
         for src, dst in FAST:
-            if not (OUT / "cache" / "oof" / dst).exists(): shutil.copyfile(ROOT / "cache" / "oof" / src, OUT / "cache" / "oof" / dst)
-    plan += [B004] + ([DINO] if want & {"005", "006"} else []) + ([B005] if "005" in want else [])    # 004/005 never wait on the 006 CNN
+            if (ROOT / "cache" / "oof" / src).exists() and not (OUT / "cache" / "oof" / dst).exists(): shutil.copyfile(ROOT / "cache" / "oof" / src, OUT / "cache" / "oof" / dst)
+    plan += [B004] + ([DINO] if want & {"005", "006", "007"} else []) + ([B005] if "005" in want else [])    # 004/005 never wait on the 006/007 CNNs
     if "006" in want:
         plan += ([UP2 + ["--reps", "0,1,2", "--no_test"], UP2 + ["--full", "5"]] if a.mode == "full" else []) + [B006]
+    if "007" in want:
+        plan += ([FT] if a.mode == "full" else []) + [B007]
     env = {**os.environ, "HF_HUB_OFFLINE": "1", "PYTORCH_MPS_HIGH_WATERMARK_RATIO": "0.6", "PYTORCH_MPS_LOW_WATERMARK_RATIO": "0.5"}  # MPS memory cap (16 GB machine)
     for s in plan:
         t0 = time.time(); print(f"\n>>> {' '.join(s)}", flush=True)

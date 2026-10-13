@@ -136,8 +136,8 @@ story += [table(ctab, [8.2 * cm, 3 * cm]), Spacer(1, 4),
           Paragraph("7. Reproducibility", H2),
           para("<font face='Courier'>python src/run.py --mode full</font> rebuilds 004/005/006 from the raw images (fast mode reuses the cached CNN predictions). "
                "LightGBM runs deterministic and single-threaded with sorted design matrices; PyTorch runs with fixed seeds and deterministic algorithms. "
-               "A fresh-folder fast-mode run reproduces all three submissions byte-identically (SHA-256 in reports/lb_tracking.json); "
-               "re-runs of the CNNs and the latent net are bitwise identical; the full-mode result is recorded in experiments.md. "
+               "In empty output folders both the fast mode and an uninterrupted full mode (all CNNs retrained, 3 h 15 min on an Apple M5) "
+               "reproduce all three submissions byte-identically (SHA-256 in reports/lb_tracking.json); all CNN prediction arrays are bitwise identical. "
                "Environment, pinned versions, weight hashes and licenses: README.md. Every experiment and its CV: experiments.md.")]
 SimpleDocTemplate(str(REP / "solution.pdf"), pagesize=A4, leftMargin=1.8 * cm, rightMargin=1.8 * cm, topMargin=1.5 * cm, bottomMargin=1.5 * cm,
                   title="Microstructure hardness - solution").build(story)

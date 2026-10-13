@@ -31,7 +31,7 @@ brew install libomp                               # macOS only: LightGBM's OpenM
 - `--target {004,005,006,all}` selects the submissions (default: all). `HARDNESS_OUT=<dir>` writes every output (`cache/`, `reports/`, `submissions/`) to a fresh folder instead of the repository.
 - All paths are relative to the repository root. Outputs: `submissions/*.csv`, `cache/` (features, OOF/test predictions), `reports/`.
 - Expected SHA-256 of the outputs: 004 `1cabcbcf…`, 005 `d082a949…`, 006 `fdf94275…` (full hashes in `reports/lb_tracking.json`).
-- Run time on the reference machine: about 15 min in fast mode. Full mode adds the CNN training (ResNet18 15 folds ≈ 35 min; 2x-upsampled ResNet18 15 folds ≈ 2 h for the CV report, plus 5 full-data seeds ≈ 45 min for the 006 test predictions).
+- Run time on the reference machine (measured 2026-10-13): fast mode ≈ 15 min; full mode 3 h 15 min (features + latent net 9 min, ResNet18 CNN 27 min, 2x-upsampled CNN 15-fold OOF 1 h 51 min for the CV report, 5 full-data seeds 48 min for the 006 test predictions).
 
 ## Environment (as run)
 
@@ -97,8 +97,8 @@ Official Q&A evidence (competition board, post "사전학습모델 사용 범위
 
 - One CV protocol for every model: `RepeatedKFold(n_splits=5, n_repeats=3, random_state=42)` over images (`src/common.py`), so OOF predictions compare and blend fold by fold.
 - LightGBM: `deterministic=True`, one thread, explicit seeds, alphabetically sorted design-matrix columns (`common.design`). Column order used to change the model; see `src/recover_003.py`.
-- PyTorch: fixed seeds, `torch.use_deterministic_algorithms(True)`, fixed data order. Verified bitwise-identical re-runs on MPS: the ResNet18 CNN (15 folds, OOF and test), the latent net, and the 2x-upsampled CNN fold models (OOF and test, one run interrupted by machine sleep). The 006 full-data seeds are re-run in the full-mode check. CNN steps cap MPS memory (`PYTORCH_MPS_HIGH/LOW_WATERMARK_RATIO` = 0.6/0.5, set by `run.py`); this does not change the numerics.
-- Verified: `run.py --mode fast --target all` in an empty `HARDNESS_OUT` folder reproduces 004, 005 and 006 byte-identically. The full-mode check is recorded in `experiments.md`.
+- PyTorch: fixed seeds, `torch.use_deterministic_algorithms(True)`, fixed data order. Verified bitwise-identical re-runs on MPS: the ResNet18 CNN (15 folds, OOF and test), the latent net, the 2x-upsampled CNN fold models (OOF and test, one run interrupted by machine sleep) and the 006 full-data seeds (full-mode run). CNN steps cap MPS memory (`PYTORCH_MPS_HIGH/LOW_WATERMARK_RATIO` = 0.6/0.5, set by `run.py`); this does not change the numerics.
+- Verified in empty `HARDNESS_OUT` folders: `run.py --mode fast --target all` and an uninterrupted `run.py --mode full --target all` (all CNNs retrained from scratch, 2026-10-13) both reproduce 004, 005 and 006 byte-identically; all CNN prediction arrays are bitwise identical to the originals.
 - `submissions/001` and `003` were produced before the determinism lockdown. `src/recover_003.py` reproduces the uploaded 003 byte-identically; the regenerated 001 differs from the uploaded 001 and is not a candidate.
 
 ## Expected differences on other hardware

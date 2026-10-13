@@ -17,4 +17,4 @@ Notes for the decision
 - 006 vs 005: the two signals disagree. The 006 public gap is unexplained, possibly public-subset noise (about 6 candidate comparisons so far, 300 public images). Ruled out as causes: the full-data CNN models (they match the fold ensembles), ensemble size, train/test distribution shift (none detected), and most of the selection effect (the gain holds on the folds not used for screening). The spread of the 006−005 difference over random 300-image subsets is sd ≈ 0.055.
 - 004 is the fallback without DINOv2 weights.
 - Shared by all three: the feature pipeline, the latent net (no labels used), and `resnet18.a1_in1k`.
-- Reproducibility: `run.py --mode fast --target all` reproduces all three byte-identically in an empty folder. The full mode, which retrains the CNNs, is checked after the experiment freeze; the result goes here.
+- Reproducibility: in empty output folders, `run.py --mode fast --target all` and an uninterrupted `run.py --mode full --target all` (all CNNs retrained, 3 h 15 min, 2026-10-13) both reproduce all three files byte-identically.
