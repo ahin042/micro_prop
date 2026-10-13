@@ -12,12 +12,6 @@ import argparse, json, time
 import numpy as np
 import pandas as pd
 from scipy import stats
-from scipy.spatial.distance import cdist
-from sklearn.cross_decomposition import PLSRegression
-from sklearn.kernel_ridge import KernelRidge
-from sklearn.linear_model import RidgeCV
-from sklearn.model_selection import KFold
-from sklearn.svm import SVR
 
 from common import C, CHEAP, REP, load_meta, splits
 
@@ -33,42 +27,7 @@ hcols = sorted(set([c for c in F.columns if c[:2] in ("q_", "r_", "n_", "b_")] +
 H = pd.concat([F, M[CHEAP].iloc[itr].reset_index(drop=True), G, P, O, Dd, LN], axis=1); H = H.loc[:, ~H.columns.duplicated()][hcols].values.astype(float)
 
 
-def std_fit(Xa, Xb):
-    med = np.nan_to_num(np.nanmedian(Xa, 0)); Xa, Xb = np.where(np.isfinite(Xa), Xa, med), np.where(np.isfinite(Xb), Xb, med)
-    mu, sd = Xa.mean(0), Xa.std(0) + 1e-8; return (Xa - mu) / sd, (Xb - mu) / sd
-
-
-def h_ridge(Xa, ya, Xb):
-    return RidgeCV(np.logspace(-2, 6, 33)).fit(Xa, ya).predict(Xb), None
-
-
-def kernel_head(kind):
-    grid = [(c, p) for c in (.5, 1, 2) for p in ((.01, .1, 1) if kind == "krr" else (3, 10, 30))]
-    def fit_pred(Ka, ya, Kb, c, p):
-        ym, ys = ya.mean(), ya.std()
-        m = KernelRidge(alpha=p, kernel="precomputed") if kind == "krr" else SVR(kernel="precomputed", C=p, epsilon=.1)
-        return m.fit(Ka, (ya - ym) / ys).predict(Kb) * ys + ym
-    def head(Xa, ya, Xb):
-        D2a = cdist(Xa, Xa, "sqeuclidean"); med = np.median(D2a[np.triu_indices(len(Xa), 1)]); D2b = cdist(Xb, Xa, "sqeuclidean")
-        sc = np.zeros(len(grid)); inner = list(KFold(5, shuffle=True, random_state=0).split(Xa))
-        for i, (c, p) in enumerate(grid):
-            Kf = np.exp(-c * D2a / med)
-            for a, b in inner: sc[i] += np.sum((fit_pred(Kf[np.ix_(a, a)], ya[a], Kf[np.ix_(b, a)], c, p) - ya[b]) ** 2)
-        c, p = grid[int(sc.argmin())]; return fit_pred(np.exp(-c * D2a / med), ya, np.exp(-c * D2b / med), c, p), sc.min() / len(ya)
-    return head
-
-
-def h_pls(Xa, ya, Xb):
-    grid = (2, 4, 8, 16); inner = list(KFold(5, shuffle=True, random_state=0).split(Xa)); sc = np.zeros(len(grid))
-    for i, k in enumerate(grid):
-        for a, b in inner: sc[i] += np.sum((PLSRegression(k, scale=False).fit(Xa[a], ya[a]).predict(Xa[b]).ravel() - ya[b]) ** 2)
-    k = grid[int(sc.argmin())]; return PLSRegression(k, scale=False).fit(Xa, ya).predict(Xb).ravel(), sc.min() / len(ya)
-
-
-def ridge_inner(Xa, ya):                                                   # inner 5-fold score for nested config selection (Ridge)
-    s = 0.0
-    for a, b in KFold(5, shuffle=True, random_state=0).split(Xa): s += np.sum((h_ridge(Xa[a], ya[a], Xa[b])[0] - ya[b]) ** 2)
-    return s / len(ya)
+from p19_lib import h_pls, h_ridge, kernel_head, ridge_inner, std_fit
 
 
 HEADS = {"ridge": h_ridge, "krr": kernel_head("krr"), "svr": kernel_head("svr"), "pls": h_pls}

@@ -1,6 +1,6 @@
 # Microstructure → hardness regression
 
-Language: English. (`README.ko.md` / `README.ja.md` and `experiments.ko.md` / `experiments.ja.md` are frozen at Phase 11 and out of date.)
+Language: English | [한국어](README.ko.md) | [日本語](README.ja.md)
 
 Image regression: 256×256 grayscale synthetic microstructure → synthetic hardness proxy (HV), metric RMSE.
 500 train / 1000 test images. Full experiment log with every CV number: [experiments.md](experiments.md).
@@ -68,14 +68,18 @@ To restore `weights/`: download `model.safetensors` from the listed repository a
 
 Audit of 2026-10-13, covering every script that `run.py` runs.
 
-**(1) Pretrained weights.** The final candidates use exactly two files. Both licenses are verified in the model card at the pinned commit and in the upstream repository:
+**(1) Pretrained weights.** The final candidates use exactly two files. Both licenses are verified in the model card at the pinned commit and in the upstream repository, and both were public long before the competition started (2026-09-29):
 
-| weights | used by | Hugging Face repo @ commit | license (model card / upstream) |
-|---|---|---|---|
-| `resnet18.a1_in1k` | 004, 005, 006 (CNN, latent net) | [timm/resnet18.a1_in1k](https://huggingface.co/timm/resnet18.a1_in1k) @ `491b427b45c9` | Apache-2.0 / Apache-2.0 ([pytorch-image-models](https://github.com/huggingface/pytorch-image-models)) |
-| `vit_small_patch14_dinov2.lvd142m` | 005, 006 (frozen embedding) | [timm/vit_small_patch14_dinov2.lvd142m](https://huggingface.co/timm/vit_small_patch14_dinov2.lvd142m) @ `4610ca143709` | Apache-2.0 / Apache-2.0 ([facebookresearch/dinov2](https://github.com/facebookresearch/dinov2)) |
+| weights | used by | Hugging Face repo @ commit | license (model card / upstream) | first public release |
+|---|---|---|---|---|
+| `resnet18.a1_in1k` | 004, 005, 006 (CNN, latent net) | [timm/resnet18.a1_in1k](https://huggingface.co/timm/resnet18.a1_in1k) @ `491b427b45c9` | Apache-2.0 / Apache-2.0 ([pytorch-image-models](https://github.com/huggingface/pytorch-image-models)) | ≤ 2023-04-05 (Hugging Face repo created). Training recipe: "ResNet strikes back", arXiv 2110.00476 (Oct 2021) |
+| `vit_small_patch14_dinov2.lvd142m` | 005, 006 (frozen embedding) | [timm/vit_small_patch14_dinov2.lvd142m](https://huggingface.co/timm/vit_small_patch14_dinov2.lvd142m) @ `4610ca143709` | Apache-2.0 / Apache-2.0 ([facebookresearch/dinov2](https://github.com/facebookresearch/dinov2)) | April 2023: DINOv2 paper arXiv 2304.07193 and the facebookresearch/dinov2 release (repo created 2023-03-29); timm copy created 2023-05-09 |
 
-Downloaded for screening and not used by any candidate: DINOv2-Base and -Large, ConvNeXt-Tiny, EfficientNetV2-S and EfficientNet-B0 (Apache-2.0); ResNet50-tv2 and torchvision ResNet18 (BSD-3-Clause). None is gated or under a custom license. No DINOv3 and no microstructure-pretrained weights are used. The timm library itself is Apache-2.0.
+Release dates come from the paper / repository release (Hugging Face repo creation date where noted), not from the pinned commit.
+
+Downloaded for screening and not used by any candidate: DINOv2-Base and -Large, ConvNeXt-Tiny, EfficientNetV2-S and EfficientNet-B0 (Apache-2.0); ResNet50-tv2 and torchvision ResNet18 (BSD-3-Clause). None is gated or under a custom license, and no DINOv3 is used. Every file was pretrained on ImageNet or on DINOv2's LVD-142M natural-image collection. **None is the `DriftFox/voronoi-microstructure-resnet` model, and none was pretrained on competition-derived or competition-like synthetic data.** The timm library itself is Apache-2.0.
+
+Official Q&A evidence (competition board, post "사전학습모델 사용 범위 규정 문의", answer by the DACON account `DACONIO`, 2026-10-13): *"1, 2번 모델은 사용 가능합니다. 3번 모델은 사용이 불가합니다. 본 대회에서는 대회 시작일인 2026년 9월 29일 이전에 공식적으로 가중치가 공개된 오픈소스 사전학습 모델에 한하여 사용 가능합니다."* (1 = ImageNet-pretrained weights, 2 = NASA MicroNet encoders: allowed; 3 = `DriftFox/voronoi-microstructure-resnet`: not allowed; only open-source pretrained models whose weights were officially public before 2026-09-29 may be used.) An earlier answer on the same board (`DACON.PSH`, 2026-10-12): no data other than the provided train data may be used, including self-generated synthetic images.
 
 **(2) No remote APIs.** Every model runs locally, offline (`HF_HUB_OFFLINE=1`); weights are loaded from `./weights` with a SHA-256 check.
 

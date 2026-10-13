@@ -76,5 +76,71 @@
   "bytes": 1217502758,
   "license_model_card": "apache-2.0",
   "license_timm_cfg": "apache-2.0"
+ },
+ "micronet_resnet18_micronet": {
+  "repo": "jstuckner/microscopy-resnet18-micronet",
+  "commit": "23fc7aeb89b8d5c7a2a82e7293a00e88134db102",
+  "file": "resnet18_micronet_weights.pth",
+  "sha256": "2433454b3a5003b7f3b3beffa15d11bbbb2591dd23759b10d0939853ceac6dd3",
+  "bytes": 44782394,
+  "license_model_card": "mit",
+  "license_timm_cfg": "mit (upstream nasa/pretrained-microscopy-models LICENSE.txt, GitHub API: MIT)",
+  "first_public": "HF repo 2025-04-15; GitHub repo 2021-07-13; paper npj Comput. Mater. 2022",
+  "note": "NASA MicroNet encoder (trained from scratch on MicroNet)"
+ },
+ "micronet_resnet18_imagenet_micronet": {
+  "repo": "jstuckner/microscopy-resnet18-imagenet-micronet",
+  "commit": "bed9ea4ebde26528ec5820a589b3dd9f4892adff",
+  "file": "resnet18_imagenet-micronet_weights.pth",
+  "sha256": "f9ba47f142a81585f8980bd08c85da807f46dcf2db449c439954adbeb44ba82d",
+  "bytes": 44783574,
+  "license_model_card": "mit",
+  "license_timm_cfg": "mit (upstream nasa/pretrained-microscopy-models LICENSE.txt, GitHub API: MIT)",
+  "first_public": "HF repo 2025-04-15; GitHub repo 2021-07-13; paper npj Comput. Mater. 2022",
+  "note": "NASA MicroNet encoder (ImageNet->MicroNet fine-tuned)"
+ },
+ "micronet_resnet34_micronet": {
+  "repo": "jstuckner/microscopy-resnet34-micronet",
+  "commit": "aca84cdd6b3ec081b22fce36ebd3a15db0454b67",
+  "file": "resnet34_micronet_weights.pth",
+  "sha256": "b01700015c2fe5e24e77be7125e9a0dbf2e5ee1c8cdf2389fa8878a7fb904dfc",
+  "bytes": 85274938,
+  "license_model_card": "mit",
+  "license_timm_cfg": "mit (upstream nasa/pretrained-microscopy-models LICENSE.txt, GitHub API: MIT)",
+  "first_public": "HF repo 2025-04-15; GitHub repo 2021-07-13; paper npj Comput. Mater. 2022",
+  "note": "NASA MicroNet encoder (trained from scratch on MicroNet)"
+ },
+ "micronet_resnet34_imagenet_micronet": {
+  "repo": "jstuckner/microscopy-resnet34-imagenet-micronet",
+  "commit": "978f195081c82f4242d076cd875e9d9afd0543c8",
+  "file": "resnet34_imagenet-micronet_weights.pth",
+  "sha256": "771b72398368b461a220e707179a7a6e5047569dfed10818a23c749f5beeec17",
+  "bytes": 85276982,
+  "license_model_card": "mit",
+  "license_timm_cfg": "mit (upstream nasa/pretrained-microscopy-models LICENSE.txt, GitHub API: MIT)",
+  "first_public": "HF repo 2025-04-15; GitHub repo 2021-07-13; paper npj Comput. Mater. 2022",
+  "note": "NASA MicroNet encoder (ImageNet->MicroNet fine-tuned)"
+ },
+ "micronet_resnet50_micronet": {
+  "repo": "jstuckner/microscopy-resnet50-micronet",
+  "commit": "c810b294acda2461775542841e6d0ba824ec46a9",
+  "file": "resnet50_micronet_weights.pth",
+  "sha256": "4c906df94c224efa267e59311244900a5633549aeda5e11f5ecfade6f30bafd2",
+  "bytes": 94344986,
+  "license_model_card": "mit",
+  "license_timm_cfg": "mit (upstream nasa/pretrained-microscopy-models LICENSE.txt, GitHub API: MIT)",
+  "first_public": "HF repo 2025-04-15; GitHub repo 2021-07-13; paper npj Comput. Mater. 2022",
+  "note": "NASA MicroNet encoder (trained from scratch on MicroNet)"
+ },
+ "micronet_resnet50_imagenet_micronet": {
+  "repo": "jstuckner/microscopy-resnet50-imagenet-micronet",
+  "commit": "315267b11563a11a9fff8904a879d2a554edbccb",
+  "file": "resnet50_imagenet-micronet_weights.pth",
+  "sha256": "1eb701119532e8259b98169bdbdacee24efb8e5cbc62b13b407e40ff4244d42b",
+  "bytes": 94347884,
+  "license_model_card": "mit",
+  "license_timm_cfg": "mit (upstream nasa/pretrained-microscopy-models LICENSE.txt, GitHub API: MIT)",
+  "first_public": "HF repo 2025-04-15; GitHub repo 2021-07-13; paper npj Comput. Mater. 2022",
+  "note": "NASA MicroNet encoder (ImageNet->MicroNet fine-tuned)"
  }
 }
