@@ -34,7 +34,7 @@ WEIGHTS = {"r18a1": ("resnet18", "resnet18.a1_in1k.safetensors", "80c49dee3da482
            "ev2s": ("tf_efficientnetv2_s", "tf_efficientnetv2_s.in21k_ft_in1k.safetensors", "6f1933fb6c0d760eae03863ad0110570393e16c0610f8fe94dc9f978e52ec59c"),
            "r50tv2": ("resnet50", "resnet50.tv2_in1k.safetensors", "30f57ada2f100011a4bd38000df906d6354688a8ca599be580337151c3c5f6a3"),
            "dinos": ("vit_small_patch14_dinov2", "vit_small_patch14_dinov2.lvd142m.safetensors", "04d27f3400d059fc0cfd7d17dd1909a75bf3ea8fb3eeb48b97cb99e57ee20081")}
-# licenses / HF commits: weights/MANIFEST_p17.json and README (convnext, effnetv2, dinov2: Apache-2.0; resnet50.tv2, resnet18.tv: BSD-3-Clause)
+# licenses / HF commits: src/weights_manifest.json and README (convnext, effnetv2, dinov2: Apache-2.0; resnet50.tv2, resnet18.tv: BSD-3-Clause)
 ARCH, wn, wh = WEIGHTS[args.arch]; wf = ROOT / "weights" / wn
 assert wf.exists() and sha256(wf) == wh, f"missing or modified weights file {wf}"
 OVL = dict(file=str(wf))

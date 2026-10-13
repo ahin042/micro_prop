@@ -53,7 +53,7 @@
    "fallback": "004 (DINOv2-free)",
    "gap": -0.9865,
    "uploaded": "2026-10-12",
-   "note": "LB WORSE than 005 (+0.070) despite CV -0.125: under investigation"
+   "note": "public LB +0.070 vs 005 despite CV -0.125; full-data models ruled out as the cause; unexplained, possibly public-subset noise (~6 comparisons, 300 public images)"
   }
  ],
  "calibration": {

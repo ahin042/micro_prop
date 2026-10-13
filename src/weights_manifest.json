@@ -1,0 +1,80 @@
+{
+ "convnext_tiny.fb_in22k_ft_in1k": {
+  "repo": "timm/convnext_tiny.fb_in22k_ft_in1k",
+  "commit": "bc48a87f119bae1b06418f5340bfa97ef75d4609",
+  "file": "model.safetensors",
+  "sha256": "77b619e187de71bce58721689da0c009e84cc20677293d7d43105307e34d868a",
+  "bytes": 114374272,
+  "license_model_card": "apache-2.0",
+  "license_timm_cfg": "apache-2.0"
+ },
+ "tf_efficientnetv2_s.in21k_ft_in1k": {
+  "repo": "timm/tf_efficientnetv2_s.in21k_ft_in1k",
+  "commit": "ea9abc143ea2b9d8e1ec1de277bce02149b9cf0e",
+  "file": "model.safetensors",
+  "sha256": "6f1933fb6c0d760eae03863ad0110570393e16c0610f8fe94dc9f978e52ec59c",
+  "bytes": 86523256,
+  "license_model_card": "apache-2.0",
+  "license_timm_cfg": "apache-2.0"
+ },
+ "resnet50.tv2_in1k": {
+  "repo": "timm/resnet50.tv2_in1k",
+  "commit": "10eea9779fc8a753af919714889bd7f60fba412d",
+  "file": "model.safetensors",
+  "sha256": "30f57ada2f100011a4bd38000df906d6354688a8ca599be580337151c3c5f6a3",
+  "bytes": 102469840,
+  "license_model_card": "bsd-3-clause",
+  "license_timm_cfg": "bsd-3-clause"
+ },
+ "vit_small_patch14_dinov2.lvd142m": {
+  "repo": "timm/vit_small_patch14_dinov2.lvd142m",
+  "commit": "4610ca143709d58a633b6397a74412c2c3842454",
+  "file": "model.safetensors",
+  "sha256": "04d27f3400d059fc0cfd7d17dd1909a75bf3ea8fb3eeb48b97cb99e57ee20081",
+  "bytes": 88240510,
+  "license_model_card": "apache-2.0",
+  "license_timm_cfg": "apache-2.0"
+ },
+ "resnet18.a1_in1k": {
+  "repo": "timm/resnet18.a1_in1k",
+  "commit": "491b427b45c94c7fb0e78b5474cc919aff584bbf",
+  "file": "model.safetensors",
+  "sha256": "80c49dee3da4822c009c5a7fe591e9223c5a2cfcf95a4067ca4dfb5a7b89c612",
+  "license_model_card": "apache-2.0",
+  "license_timm_cfg": "apache-2.0"
+ },
+ "efficientnet_b0.ra_in1k": {
+  "repo": "timm/efficientnet_b0.ra_in1k",
+  "commit": "1b5383e5f79cc0f7fc067e372f8f26a5fa73f26a",
+  "file": "model.safetensors",
+  "sha256": "d569899762ea9b1384ee07f4af64805cf8caa1c55f9253ebb1080dc40e87a2cd",
+  "license_model_card": "apache-2.0",
+  "license_timm_cfg": "apache-2.0"
+ },
+ "resnet18.tv_in1k": {
+  "repo": "https://download.pytorch.org/models/resnet18-f37072fd.pth (torchvision IMAGENET1K_V1)",
+  "commit": "n/a (content-addressed file name)",
+  "file": "resnet18-f37072fd.pth",
+  "sha256": "f37072fd47e89c5e827621c5baffa7500819f7896bbacec160b1a16c560e07ec",
+  "license_model_card": "bsd-3-clause (torchvision)",
+  "license_timm_cfg": "bsd-3-clause"
+ },
+ "vit_base_patch14_dinov2.lvd142m": {
+  "repo": "timm/vit_base_patch14_dinov2.lvd142m",
+  "commit": "4685c99dabffe5affac90bd99dbffd25801ae58d",
+  "file": "model.safetensors",
+  "sha256": "55cbb5d887b336d430e649c277b85a1429e724871f9d02ac16203235886d8c7b",
+  "bytes": 346334872,
+  "license_model_card": "apache-2.0",
+  "license_timm_cfg": "apache-2.0"
+ },
+ "vit_large_patch14_dinov2.lvd142m": {
+  "repo": "timm/vit_large_patch14_dinov2.lvd142m",
+  "commit": "4741e1cafbf45415e77074bb0cb42dba76c8684a",
+  "file": "model.safetensors",
+  "sha256": "0424a5d1b515278cba3c6640ccbeaacc41de59d3a93df0dd5e494285eea2b355",
+  "bytes": 1217502758,
+  "license_model_card": "apache-2.0",
+  "license_timm_cfg": "apache-2.0"
+ }
+}
