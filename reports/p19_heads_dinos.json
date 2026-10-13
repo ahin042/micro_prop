@@ -1,0 +1,319 @@
+{
+ "table": [
+  {
+   "config": "mid4/gem/ridge",
+   "single": 12.906737171276253,
+   "blend_replace": 13.069185531987726,
+   "d_replace": -0.04377698808542168,
+   "wins_replace": 10,
+   "blend_add": 12.920642668377004,
+   "d_add": -0.1923198516961424,
+   "wins_add": 15
+  },
+  {
+   "config": "mid4/base/ridge",
+   "single": 12.97226673993108,
+   "blend_replace": 13.105045279078906,
+   "d_replace": -0.007917240994237318,
+   "wins_replace": 9,
+   "blend_add": 12.947898835758654,
+   "d_add": -0.1650636843144922,
+   "wins_add": 14
+  },
+  {
+   "config": "mid4/gem/krr",
+   "single": 12.98011467757346,
+   "blend_replace": 13.114174589552817,
+   "d_replace": 0.0012120694796726875,
+   "wins_replace": 6,
+   "blend_add": 12.952246300610598,
+   "d_add": -0.1607162194625463,
+   "wins_add": 15
+  },
+  {
+   "config": "all12/gem/ridge",
+   "single": 13.0164039344397,
+   "blend_replace": 13.13633578640923,
+   "d_replace": 0.023373266336083276,
+   "wins_replace": 8,
+   "blend_add": 12.981098017684037,
+   "d_add": -0.13186450238910757,
+   "wins_add": 14
+  },
+  {
+   "config": "all12/base/ridge",
+   "single": 13.03918728357537,
+   "blend_replace": 13.133491979615474,
+   "d_replace": 0.02052945954232778,
+   "wins_replace": 8,
+   "blend_add": 12.978107753081133,
+   "d_add": -0.13485476699201157,
+   "wins_add": 14
+  },
+  {
+   "config": "mid4/base/krr",
+   "single": 13.0562540489781,
+   "blend_replace": 13.14043195422572,
+   "d_replace": 0.02746943415257152,
+   "wins_replace": 6,
+   "blend_add": 12.972832891588444,
+   "d_add": -0.14012962848470317,
+   "wins_add": 13
+  },
+  {
+   "config": "last4/gem/ridge",
+   "single": 13.148931080533242,
+   "blend_replace": 13.130357562774448,
+   "d_replace": 0.017395042701301242,
+   "wins_replace": 6,
+   "blend_add": 12.999905068187568,
+   "d_add": -0.11305745188557843,
+   "wins_add": 14
+  },
+  {
+   "config": "last4/base/ridge",
+   "single": 13.153917325469404,
+   "blend_replace": 13.122707602528221,
+   "d_replace": 0.009745082455075741,
+   "wins_replace": 7,
+   "blend_add": 12.994201077527062,
+   "d_add": -0.11876144254608256,
+   "wins_add": 15
+  },
+  {
+   "config": "last4/base/krr",
+   "single": 13.264694270470505,
+   "blend_replace": 13.112414185894012,
+   "d_replace": -0.0005483341791318707,
+   "wins_replace": 7,
+   "blend_add": 12.982536203730593,
+   "d_add": -0.13042631634255553,
+   "wins_add": 13
+  },
+  {
+   "config": "last4/gem/krr",
+   "single": 13.282455335458986,
+   "blend_replace": 13.118680102542106,
+   "d_replace": 0.0057175824689585635,
+   "wins_replace": 7,
+   "blend_add": 12.987506904185693,
+   "d_add": -0.1254556158874544,
+   "wins_add": 13
+  },
+  {
+   "config": "all12/gem/krr",
+   "single": 13.294724951557177,
+   "blend_replace": 13.228817173432201,
+   "d_replace": 0.1158546533590575,
+   "wins_replace": 6,
+   "blend_add": 13.046067159424114,
+   "d_add": -0.06689536064903265,
+   "wins_add": 10
+  },
+  {
+   "config": "mid4/gem/ridge+hand",
+   "single": 13.302353813443496,
+   "blend_replace": 13.356375014253294,
+   "d_replace": 0.24341249418014724,
+   "wins_replace": 1,
+   "blend_add": 13.094025231504567,
+   "d_add": -0.018937288568575402,
+   "wins_add": 11
+  },
+  {
+   "config": "mid4/gem/svr",
+   "single": 13.309808282973902,
+   "blend_replace": 13.136637621696618,
+   "d_replace": 0.023675101623472018,
+   "wins_replace": 7,
+   "blend_add": 12.964000493095632,
+   "d_add": -0.14896202697751365,
+   "wins_add": 12
+  },
+  {
+   "config": "last4/base/ridge+hand",
+   "single": 13.319245080677089,
+   "blend_replace": 13.356534823072499,
+   "d_replace": 0.24357230299934982,
+   "wins_replace": 1,
+   "blend_add": 13.109723998814426,
+   "d_add": -0.00323852125872115,
+   "wins_add": 8
+  },
+  {
+   "config": "all12/base/krr",
+   "single": 13.329592616327776,
+   "blend_replace": 13.24007893473017,
+   "d_replace": 0.12711641465702356,
+   "wins_replace": 5,
+   "blend_add": 13.053688974099327,
+   "d_add": -0.059273545973817815,
+   "wins_add": 10
+  },
+  {
+   "config": "last4/gem/ridge+hand",
+   "single": 13.33680869471968,
+   "blend_replace": 13.36208932376584,
+   "d_replace": 0.24912680369269288,
+   "wins_replace": 1,
+   "blend_add": 13.114143276064055,
+   "d_add": 0.0011807559909096691,
+   "wins_add": 7
+  },
+  {
+   "config": "mid4/base/ridge+hand",
+   "single": 13.336904948188439,
+   "blend_replace": 13.375246536573673,
+   "d_replace": 0.2622840165005272,
+   "wins_replace": 1,
+   "blend_add": 13.107406002315948,
+   "d_add": -0.005556517757198047,
+   "wins_add": 7
+  },
+  {
+   "config": "all12/gem/ridge+hand",
+   "single": 13.356642557467364,
+   "blend_replace": 13.385371642140367,
+   "d_replace": 0.2724091220672195,
+   "wins_replace": 1,
+   "blend_add": 13.118911492235576,
+   "d_add": 0.005948972162429911,
+   "wins_add": 6
+  },
+  {
+   "config": "all12/base/ridge+hand",
+   "single": 13.364519135311507,
+   "blend_replace": 13.388177265485638,
+   "d_replace": 0.2752147454124901,
+   "wins_replace": 2,
+   "blend_add": 13.119965850043704,
+   "d_add": 0.007003329970557696,
+   "wins_add": 5
+  },
+  {
+   "config": "mid4/base/svr",
+   "single": 13.43164170009867,
+   "blend_replace": 13.230719529733417,
+   "d_replace": 0.11775700966026943,
+   "wins_replace": 4,
+   "blend_add": 13.033503067323712,
+   "d_add": -0.07945945274943517,
+   "wins_add": 12
+  },
+  {
+   "config": "last4/base/svr",
+   "single": 13.607306363479893,
+   "blend_replace": 13.256288130728242,
+   "d_replace": 0.14332561065509614,
+   "wins_replace": 3,
+   "blend_add": 13.08107342331572,
+   "d_add": -0.031889096757425385,
+   "wins_add": 10
+  },
+  {
+   "config": "last4/gem/svr",
+   "single": 13.642630621030024,
+   "blend_replace": 13.270942058175528,
+   "d_replace": 0.15797953810238496,
+   "wins_replace": 2,
+   "blend_add": 13.091929123429036,
+   "d_add": -0.021033396644107208,
+   "wins_add": 9
+  },
+  {
+   "config": "last4/gem/pls",
+   "single": 13.661476378896237,
+   "blend_replace": 13.234362310788251,
+   "d_replace": 0.12139979071510526,
+   "wins_replace": 3,
+   "blend_add": 13.058358008429426,
+   "d_add": -0.05460451164371918,
+   "wins_add": 9
+  },
+  {
+   "config": "all12/gem/svr",
+   "single": 13.689963650605991,
+   "blend_replace": 13.349347202598333,
+   "d_replace": 0.23638468252518727,
+   "wins_replace": 2,
+   "blend_add": 13.129117016786852,
+   "d_add": 0.016154496713706005,
+   "wins_add": 9
+  },
+  {
+   "config": "last4/base/pls",
+   "single": 13.70842050490432,
+   "blend_replace": 13.23783231963837,
+   "d_replace": 0.12486979956522587,
+   "wins_replace": 3,
+   "blend_add": 13.061159503269629,
+   "d_add": -0.05180301680351948,
+   "wins_add": 10
+  },
+  {
+   "config": "all12/base/svr",
+   "single": 13.72225605094465,
+   "blend_replace": 13.360900307926618,
+   "d_replace": 0.2479377878534694,
+   "wins_replace": 2,
+   "blend_add": 13.136635384858371,
+   "d_add": 0.023672864785223287,
+   "wins_add": 7
+  },
+  {
+   "config": "mid4/gem/pls",
+   "single": 13.75443351512193,
+   "blend_replace": 13.246016573340082,
+   "d_replace": 0.1330540532669359,
+   "wins_replace": 3,
+   "blend_add": 13.035766285128082,
+   "d_add": -0.07719623494506772,
+   "wins_add": 9
+  },
+  {
+   "config": "mid4/base/pls",
+   "single": 13.822176533493222,
+   "blend_replace": 13.286776560785329,
+   "d_replace": 0.17381404071217865,
+   "wins_replace": 3,
+   "blend_add": 13.066129473014245,
+   "d_add": -0.04683304705890201,
+   "wins_add": 8
+  },
+  {
+   "config": "all12/base/pls",
+   "single": 13.843370195124114,
+   "blend_replace": 13.280715294009358,
+   "d_replace": 0.1677527739362115,
+   "wins_replace": 5,
+   "blend_add": 13.074694785740228,
+   "d_add": -0.03826773433291978,
+   "wins_add": 8
+  },
+  {
+   "config": "all12/gem/pls",
+   "single": 13.871218833169538,
+   "blend_replace": 13.335641218011206,
+   "d_replace": 0.222678697938057,
+   "wins_replace": 4,
+   "blend_add": 13.116513040212853,
+   "d_add": 0.0035505201397082685,
+   "wins_add": 6
+  }
+ ],
+ "nested": {
+  "single": 13.078838301227002,
+  "blend": 13.11948470824946,
+  "d": 0.00652218817631495,
+  "p": 0.9040733272172117,
+  "wins": 8,
+  "chosen": {
+   "mid4/gem/ridge": 8,
+   "mid4/gem/krr": 2,
+   "mid4/gem/svr": 2,
+   "mid4/base/ridge": 1,
+   "all12/base/ridge": 1,
+   "all12/gem/ridge": 1
+  }
+ }
+}
