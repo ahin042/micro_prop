@@ -66,15 +66,16 @@
     11.32,
     11.92
    ],
-   "lb": null,
-   "uploaded": null,
+   "lb": 11.677,
+   "uploaded": "2026-10-13/14 (user)",
    "recipe": "mean of DINOv2-S fine-tuned end-to-end (cnn3.py, 252 px, avg pool, LLRD 0.75, lr 1e-4, wd .05, D4+blur+noise; OOF and test = 15 fold models, test averaged), Ridge[004 features], Ridge[frozen DINOv2-S @252]",
    "weights": "resnet18.a1_in1k (latent net, as 004/005), vit_small_patch14_dinov2.lvd142m (Apache-2.0; fine-tuned in the FT component, frozen in the Ridge component)",
    "gate": "PASS: vs 005 d -0.323 (p 0.0015, 12/15) >= 0.25; vs 006 d -0.198 (p 0.032, 10/15); by repeat -0.318 (rep 0, screening) / -0.407 / -0.244; reps 1-2 only (not screened) d -0.325 (p 0.005, 9/10)",
    "selection": "2 pre-declared variants (A replace CNN, B add as 4th); nested per-fold A/B choice picks A in 15/15 folds -> selection-adjusted CV 12.790",
    "reproducible": "FT OOF bitwise identical across two independent 15-fold runs (max |diff| 0.0)",
    "fallback": "005",
-   "note": "test predictions of the FT component come from fold models (400 images each), like 005's CNN, so the 005 gap applies"
+   "note": "test predictions of the FT component come from fold models (400 images each), like 005's CNN, so the 005 gap applies",
+   "gap": -1.113
   }
  ],
  "calibration": {
@@ -87,8 +88,11 @@
   "gaps_all": [
    -1.0697,
    -1.1561,
-   -1.1813
+   -1.1813,
+   -0.9865,
+   -1.113
   ],
-  "gap_006": -0.9865
+  "gap_006": -0.9865,
+  "gap_007": -1.113
  }
 }
