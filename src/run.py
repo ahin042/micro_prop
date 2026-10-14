@@ -1,6 +1,6 @@
-"""Single-command reproduction of the final-candidate submissions 004 / 005 / 006.
+"""Single-command reproduction of the final-candidate submissions 004 / 005 / 006 / 007.
 
-  python src/run.py --mode full [--target all]   # everything from raw images, incl. all CNN training (~4 h on Apple M5 / MPS)
+  python src/run.py --mode full [--target all]   # everything from raw images, incl. all CNN training (004-006: 3 h 15 min, +~2 h for 007; Apple M5 / MPS)
   python src/run.py --mode fast [--target all]   # same, but reuse the cached CNN OOF/test arrays from ./cache/oof
 
 Set HARDNESS_OUT=<dir> to write every output (cache/, reports/, submissions/) into a fresh folder instead of the repo.
@@ -8,7 +8,7 @@ Reference outputs (sha256 on the reference setup):
   004_cnn_r18_d4bn_plus_ridge_desc_latnet.csv  1cabcbcf...   0.5*CNN r18 + 0.5*Ridge[features + latent net]
   005_eq3_cnn_r18_ridge004_dinov2s.csv         d082a949...   mean(CNN r18, Ridge004, Ridge[frozen DINOv2-S])
   006_eq3_cnn_r18up2full_ridge004_dinov2s.csv  fdf94275...   mean(CNN r18 2x-upsampled [5 full-data seeds], Ridge004, Ridge[DINOv2-S])
-  007_eq3_dinov2s_ft_ridge004_dinov2s.csv      (Phase 19)    mean(DINOv2-S fine-tuned [15-fold-mean test], Ridge004, Ridge[DINOv2-S])
+  007_eq3_dinov2s_ft_ridge004_dinov2s.csv      93292368...   mean(DINOv2-S fine-tuned [15-fold-mean test], Ridge004, Ridge[DINOv2-S])
 Pipeline (all seeds fixed; pretrained weights loaded from ./weights, sha256-checked; no network needed):
   stage0_recon -> cheap global stats            features -> nuisance-aware features (+ blur-corrected variants)
   baseline_cheap / recover_003 -> 001 and the 003 baseline (reference for paired tests)

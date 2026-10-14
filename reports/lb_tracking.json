@@ -54,6 +54,27 @@
    "gap": -0.9865,
    "uploaded": "2026-10-12",
    "note": "public LB +0.070 vs 005 despite CV -0.125; full-data models ruled out as the cause; unexplained, possibly public-subset noise (~6 comparisons, 300 public images)"
+  },
+  {
+   "file": "007_eq3_dinov2s_ft_ridge004_dinov2s.csv",
+   "sha256": "93292368f2f44b9d63918f800fa9766f16712b7d82a0d78fed0a0c9b0377cff6",
+   "cv": 12.79,
+   "cv_honest_crossfit_ln": 12.791,
+   "cv_selection_adjusted": 12.79,
+   "expected_lb": 11.62,
+   "expected_lb_range": [
+    11.32,
+    11.92
+   ],
+   "lb": null,
+   "uploaded": null,
+   "recipe": "mean of DINOv2-S fine-tuned end-to-end (cnn3.py, 252 px, avg pool, LLRD 0.75, lr 1e-4, wd .05, D4+blur+noise; OOF and test = 15 fold models, test averaged), Ridge[004 features], Ridge[frozen DINOv2-S @252]",
+   "weights": "resnet18.a1_in1k (latent net, as 004/005), vit_small_patch14_dinov2.lvd142m (Apache-2.0; fine-tuned in the FT component, frozen in the Ridge component)",
+   "gate": "PASS: vs 005 d -0.323 (p 0.0015, 12/15) >= 0.25; vs 006 d -0.198 (p 0.032, 10/15); by repeat -0.318 (rep 0, screening) / -0.407 / -0.244; reps 1-2 only (not screened) d -0.325 (p 0.005, 9/10)",
+   "selection": "2 pre-declared variants (A replace CNN, B add as 4th); nested per-fold A/B choice picks A in 15/15 folds -> selection-adjusted CV 12.790",
+   "reproducible": "FT OOF bitwise identical across two independent 15-fold runs (max |diff| 0.0)",
+   "fallback": "005",
+   "note": "test predictions of the FT component come from fold models (400 images each), like 005's CNN, so the 005 gap applies"
   }
  ],
  "calibration": {
