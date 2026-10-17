@@ -76,6 +76,24 @@
    "fallback": "005",
    "note": "test predictions of the FT component come from fold models (400 images each), like 005's CNN, so the 005 gap applies",
    "gap": -1.113
+  },
+  {
+   "file": "008_eq4_dinov2s_ft_dinov2b_ft_ridge004_dinov2s.csv",
+   "sha256": "2c383d076343630423a358fab18227dbe31fb701197b17957f4bc88597999da9",
+   "cv": 12.604,
+   "cv_selection_adjusted": 12.633,
+   "expected_lb": 11.43,
+   "expected_lb_range": [
+    11.13,
+    11.73
+   ],
+   "lb": null,
+   "uploaded": null,
+   "recipe": "equal-weight mean of DINOv2-S fine-tuned (cnn3.py, = 007's), DINOv2-B fine-tuned (cnn4.py, same recipe, batch 16), Ridge[004 features], Ridge[frozen DINOv2-S @252]; both fine-tuned parts: 15 fold models, test averaged",
+   "vs_007": "d -0.186 (p 0.0007, 13/15); selection-adjusted (replace vs add, nested) -0.157 (p 0.004, 13/15); folds 1-14 (not screened) -0.190",
+   "gate": "FAIL vs the Phase 20 gate (<= 12.540, i.e. >= 0.25 better than 007); built on user request (2026-10-17) as the best-CV model",
+   "weights": "resnet18.a1_in1k (latent net), vit_small_patch14_dinov2.lvd142m and vit_base_patch14_dinov2.lvd142m (Apache-2.0; fine-tuned)",
+   "fallback": "005"
   }
  ],
  "calibration": {
