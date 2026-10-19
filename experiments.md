@@ -2,6 +2,27 @@
 
 Language: English | [한국어](experiments.ko.md) | [日本語](experiments.ja.md)
 
+## Summary
+
+CV = average RMSE over the same 15 folds (5 folds × 3 repeats, seed 42) on the 500 training images. Lower is better.
+
+| when | what we tried | best result |
+|---|---|---|
+| Oct 12 | Checked the data: answers are continuous numbers, no duplicate images, train and test images look the same. Simple baselines. | Ridge on 28 simple image statistics: CV 14.85 (file 001) |
+| Oct 12 | Hand-made structure features (grain size, phases, …). Most of them follow the blur and noise more than the hardness. No exact formula found. | blend 003: CV 14.35, LB 13.29 |
+| Oct 12–13 | Better hand-made features (dark-phase amount, orientation, grain shapes), a helper network trained on damaged images, and a ResNet18 CNN. | 004: CV 13.53, LB 12.37 |
+| Oct 13 | Other pretrained networks. Frozen DINOv2-S features + Ridge were the best single model (CV 13.31). | 005: CV 13.11, LB 11.93 |
+| Oct 13 | CNN on 2×-upscaled images. Better CV, but worse public LB than 005 (cause not found). | 006: CV 12.99, LB 12.00 |
+| Oct 13 | Looked for what explains the remaining errors. Nothing we measure explains them. Very similar-looking images can still differ by about 12 HV; how much of that is noise is unknown. | – |
+| Oct 13 | More ways to use frozen DINOv2, and microscopy-pretrained MicroNet: small or no gains. Fine-tuning DINOv2-S end to end helped. | 007: CV 12.79, LB 11.68 |
+| Oct 14 | Fine-tuned DINOv2-B (best single model, CV 13.08), LightGBM on mixed features, MLP head. Only DINOv2-B helped. | 007 + DINOv2-B: CV 12.60 |
+| Oct 15–17 | Planned a second seed for the fine-tuned models. Kaggle gave the account no GPU, so it was not finished. Built 008 from the existing models. | 008: CV 12.60, LB 11.50 |
+| Oct 18 | Tried to fine-tune DINOv2-L. It did not fit in the memory of the 16 GB Mac. Not run. | – |
+
+Rule used for every new idea: keep it only if CV improves by a clear margin over the current best, measured on the same 15 folds. We did not tune anything on the public LB.
+
+## Full log
+
 | date | stage | method | CV RMSE ± std | LB | conclusion |
 |---|---|---|---|---|---|
 | 2026-10-12 | 0 | label/image recon (src/stage0_recon.py) | - | - | Continuous labels (500/500 unique, 14 decimals, no grid). log(y) ~ normal (Shapiro p 0.14 vs raw 4e-5). No exact/near duplicates (min 32px NN-MSE 0.58), no PNG metadata, file size r=-0.03. Treat as latent-variable estimation + formula recovery. |
@@ -122,3 +143,6 @@ Language: English | [한국어](experiments.ko.md) | [日本語](experiments.ja.
 | 2026-10-15/16 | 21 | **Phase 21 moved to Kaggle (user decision; user confirmed DACON data upload, ran the upload script themselves).** Private datasets ahin042/daker-images (74 MB), daker-weights (403 MB), daker-code (2 MB) ready 2026-10-15 17:38 KST; notebooks daker-phase21-small / -base pushed (cnn4.py, `--seed 0`, 007 recipe; outputs saved per fold). Local MPS folds 0-2 of S seed 0 (14.447 / 11.683 / 15.059) renamed to tag x_dinos_ft_seed0mps_partial so they are never merged. | - | - | **No GPU attached**: both runs started on CPU (`torch 2.11.0+cpu`, no CUDA device), no fold finished, status CANCEL_ACKNOWLEDGED. Re-push of the small notebook with `--accelerator NvidiaTeslaT4` + a fail-fast CUDA check: again no GPU (stopped after 2 min). GPU quota 0/30 h used → account likely not phone-verified. Waiting for the user to enable GPU; then re-push both. |
 | 2026-10-17 | 21 | Kaggle path abandoned (no GPU on the account); local seed-0 runs not started (they would end ~04:00 on 10-18, after the freeze). **User request: "just make one model"** → candidate **008** = Phase 20's best blend, B "add as 4th": mean(DINOv2-S FT, DINOv2-B FT, Ridge004, Ridge[DINOv2-S]) from the existing 15-fold arrays (`p17_build.py --cnn x_dinos_ft_t --cnn x_dinob_ft --dino dinos:252`); `run.py --target 008` added (full mode: + DINOv2-B fine-tuning ≈ 4.5 h). | CV **12.604** ± 0.915 · selection-adjusted 12.633 · vs 007 −0.186 (p .0007, 13/15) | (not uploaded) | **Below the Phase 20 gate (≤ 12.540)**; built on request as the best-CV model. sha256 2c383d07…; 1000 rows, IDs in sample-submission order, no NaN, range 168.5-233.1; corr with 007 0.994 (rms diff 1.19 HV), with 005 0.969. Expected LB 11.13-11.73 (CV − 1.17 ± 0.3; with 007's observed gap −1.113: 11.49). |
 | 2026-10-17 | - | fresh-folder `run.py --mode fast --target 008` (empty HARDNESS_OUT) | - | - | **EXIT 0; 008 SHA-256 match** (2c383d07…). Full mode (retraining DINOv2-S and -B) not run. |
+| 2026-10-18 | - | 008 public LB (user upload) | CV 12.604 | **11.4968327689** | LB − CV −1.107 (007: −1.113). 008 is the best public LB (−0.180 vs 007). |
+| 2026-10-18 | 22 | DINOv2-L fine-tuning attempt (cnn4.py `--arch dinol`; weights on disk since 10-12, SHA-256 0424a5d1…, Apache-2.0) | - | - | Out of memory at batch 4 and batch 2 under the MPS memory cap 0.6 (weights + gradients + Adam + EMA ≈ 6 GB of the ~6.4 GB cap). A probe with the cap raised to 0.9 was interrupted. **Not run; no DINOv2-L results.** |
+| 2026-10-19 | - | Competition over. GitHub cleanup: stopped tracking `reports/p15/cnn_unique.png` (16 training images with their labels) and `reports/p18_pairs.json` (16 training IDs with labels); both added to .gitignore. Docs rewritten in plain words; the ko/ja README and experiment summaries are up to date again. | - | - | Git history scrubbed too (`git filter-branch`, user-approved): `reports/p12/*`, `reports/p13/*` (montages of training images with labels, label lists) and the two files above removed from all 43 commits; force-pushed (main 1647a8c → e2b5a3e). |

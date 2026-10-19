@@ -87,13 +87,14 @@
     11.13,
     11.73
    ],
-   "lb": null,
-   "uploaded": null,
+   "lb": 11.4968327689,
+   "uploaded": "2026-10-18 (user)",
    "recipe": "equal-weight mean of DINOv2-S fine-tuned (cnn3.py, = 007's), DINOv2-B fine-tuned (cnn4.py, same recipe, batch 16), Ridge[004 features], Ridge[frozen DINOv2-S @252]; both fine-tuned parts: 15 fold models, test averaged",
    "vs_007": "d -0.186 (p 0.0007, 13/15); selection-adjusted (replace vs add, nested) -0.157 (p 0.004, 13/15); folds 1-14 (not screened) -0.190",
    "gate": "FAIL vs the Phase 20 gate (<= 12.540, i.e. >= 0.25 better than 007); built on user request (2026-10-17) as the best-CV model",
    "weights": "resnet18.a1_in1k (latent net), vit_small_patch14_dinov2.lvd142m and vit_base_patch14_dinov2.lvd142m (Apache-2.0; fine-tuned)",
-   "fallback": "005"
+   "fallback": "005",
+   "gap": -1.1072
   }
  ],
  "calibration": {
@@ -108,9 +109,11 @@
    -1.1561,
    -1.1813,
    -0.9865,
-   -1.113
+   -1.113,
+   -1.1072
   ],
   "gap_006": -0.9865,
-  "gap_007": -1.113
+  "gap_007": -1.113,
+  "gap_008": -1.1072
  }
 }

@@ -35,3 +35,4 @@ reports/p12/visual_stats.json
 reports/**/*.png
 predictions/
 kaggle_out/
+reports/p18_pairs.json
