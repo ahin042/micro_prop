@@ -49,7 +49,8 @@ WEIGHTS = {"r18a1": ("resnet18", "resnet18.a1_in1k.safetensors", "80c49dee3da482
            "mn18in": ("resnet18", "micronet_resnet18_imagenet_micronet.pth", "f9ba47f142a81585f8980bd08c85da807f46dcf2db449c439954adbeb44ba82d"),
            "mn50in": ("resnet50", "micronet_resnet50_imagenet_micronet.pth", "1eb701119532e8259b98169bdbdacee24efb8e5cbc62b13b407e40ff4244d42b"),
            "dinos": ("vit_small_patch14_dinov2", "vit_small_patch14_dinov2.lvd142m.safetensors", "04d27f3400d059fc0cfd7d17dd1909a75bf3ea8fb3eeb48b97cb99e57ee20081"),
-           "dinob": ("vit_base_patch14_dinov2", "vit_base_patch14_dinov2.lvd142m.safetensors", "55cbb5d887b336d430e649c277b85a1429e724871f9d02ac16203235886d8c7b")}
+           "dinob": ("vit_base_patch14_dinov2", "vit_base_patch14_dinov2.lvd142m.safetensors", "55cbb5d887b336d430e649c277b85a1429e724871f9d02ac16203235886d8c7b"),
+           "dinol": ("vit_large_patch14_dinov2", "vit_large_patch14_dinov2.lvd142m.safetensors", "0424a5d1b515278cba3c6640ccbeaacc41de59d3a93df0dd5e494285eea2b355")}
 # licenses / HF commits: src/weights_manifest.json and README (convnext, effnetv2, dinov2: Apache-2.0; resnet50.tv2, resnet18.tv: BSD-3-Clause)
 ARCH, wn, wh = WEIGHTS[args.arch]; wf = ROOT / "weights" / wn
 assert wf.exists() and sha256(wf) == wh, f"missing or modified weights file {wf}"
