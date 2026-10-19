@@ -48,32 +48,6 @@ brew install libomp                               # macOS only (needed by LightG
 | `vit_small_patch14_dinov2.lvd142m` (DINOv2-S) | 005–008 (frozen in 005/006, fine-tuned in 007/008) | Apache-2.0 |
 | `vit_base_patch14_dinov2.lvd142m` (DINOv2-B) | 008 (fine-tuned) | Apache-2.0 |
 
-All were public long before the competition started. Download sources, commits and SHA-256 are in `src/weights_manifest.json`.
-Other weights (DINOv2-L, ConvNeXt, EfficientNet, ResNet50, MicroNet) were only tested and are not used by any file.
-
-## Competition rules we followed
-
-- Only the training images and `train.csv` were used for training. Test images were only used for prediction.
-- No outside data, no generated extra images, no online APIs. Everything runs offline.
-- Pretrained weights: open licenses, public before 2026-09-29. The banned `DriftFox/voronoi-microstructure-resnet` model was never used.
-- Python only, relative paths, UTF-8, fixed seeds.
-
-## Reproducibility
-
-- Seeds are fixed and PyTorch runs in deterministic mode.
-- On the reference Mac, rebuilding in an empty folder gives byte-identical CSVs (004–006 in fast and full mode; 007 and 008 in fast mode).
-- The DINOv2-S fine-tuning of 007 was run three times and gave exactly the same numbers each time.
-- On other hardware (another CPU, CUDA) the numbers can differ slightly, like a different random seed. Compare files by value, not by SHA-256.
-
-## What we learned
-
-1. The images differ a lot in blur, noise and contrast, and this has nothing to do with hardness. Classic grain-size measurements mostly measure the blur, not the material.
-2. The best hand-made signal is the amount of dark phase, measured against the main gray level of each image.
-3. A small network trained on damaged copies of the training images measures the structure more reliably on blurry or noisy images.
-4. Pretrained DINOv2 features worked better than all hand-made features. Fine-tuning DINOv2-S and DINOv2-B gave the biggest gains (007, 008).
-5. Averaging different kinds of models helped every time.
-6. 006 was better than 005 in CV but worse on the public LB. We could not explain this; it may be noise in the 300 public test images.
-
 ## Code (`src/`)
 
 | file | role |
