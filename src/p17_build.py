@@ -2,7 +2,7 @@
 vs the 004 recipe and 003; optional submission. No blend weights are fitted (equal weights), so the only selection is
 the pre-declared DINOv2 backbone choice, reported in reports/p17_probe_*.json.
 --ln p13/latnet_cf_pred.parquet = honest variant: the latent-net features of the clean train images are cross-fitted (out-of-fold), so
-they are as noisy as the test features (the final latent net memorises its own training images; see experiments.md, Phase 16).
+they are as noisy as the test features (the final latent net memorises its own training images).
 Selection rule vs 004: d <= 0 and (p < .1 or >= 8/15 fold wins). Expected LB = CV - 1.17 (reports/lb_tracking.json, gaps of 004/005).
 Usage: python src/p17_build.py --cnn r18_final_a [--cnn r18up2_final:full] --dino dinos:252 [--ln p13/latnet_cf_pred.parquet] [--no_feat] [--name 00x_....csv]
 """

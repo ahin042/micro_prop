@@ -2,7 +2,7 @@
 
 Language: English | [한국어](README.ko.md) | [日本語](README.ja.md)
 
-Code for the DACON/DAKER competition "합성 미세구조 기반 재료 물성 예측 AI 경진대회" (Sep 29 – Oct 19, 2026).
+합성 미세구조 기반 재료 물성 예측 AI 경진대회 (Sep 29 – Oct 19, 2026).
 The task: look at one 256×256 grayscale image of a synthetic material structure and predict its hardness value.
 There are 500 training images (with answers) and 1000 test images. The score is RMSE (lower is better).
 
@@ -22,7 +22,6 @@ The competition data is **not** in this repository. Put it in `data/` yourself (
 - CV = average RMSE over 15 folds (5 folds × 3 repeats, seed 42) on the training images. Every model uses the same folds.
 - Public LB = score on 30% of the test set. The public LB was about 1.0–1.2 lower than CV for every file.
 - Full file names, SHA-256 and notes: [reports/final_candidates.md](reports/final_candidates.md) and `reports/lb_tracking.json`.
-- Full experiment log: [experiments.md](experiments.md).
 
 ## How to run
 
@@ -60,4 +59,4 @@ brew install libomp                               # macOS only (needed by LightG
 | `cnn3.py`, `cnn4.py` | DINOv2 fine-tuning (007, 008) |
 | `p17_dino_probe.py`, `p13_build_004.py`, `p17_build.py` | frozen DINOv2 features, blends and CSV files |
 | `writeup.py` | solution PDF (`reports/solution.pdf`) |
-| other `p1*`/`p2*` scripts | experiments described in experiments.md (not needed to rebuild the CSVs) |
+| other `p1*`/`p2*` scripts | other experiments (not needed to rebuild the CSVs) |

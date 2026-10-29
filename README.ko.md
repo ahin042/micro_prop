@@ -2,7 +2,7 @@
 
 언어: [English](README.md) | 한국어 | [日本語](README.ja.md)
 
-DACON/DAKER "합성 미세구조 기반 재료 물성 예측 AI 경진대회"(2026년 9월 29일 ~ 10월 19일) 코드입니다.
+합성 미세구조 기반 재료 물성 예측 AI 경진대회(2026년 9월 29일 ~ 10월 19일) 코드입니다.
 과제: 합성 재료 구조를 찍은 256×256 흑백 이미지 한 장을 보고 경도 값을 예측합니다.
 학습 이미지 500장(정답 있음), 테스트 이미지 1000장이 있습니다. 점수는 RMSE이고 낮을수록 좋습니다.
 
@@ -22,7 +22,6 @@ DACON/DAKER "합성 미세구조 기반 재료 물성 예측 AI 경진대회"(20
 - CV = 학습 이미지로 15번(5-fold × 3회 반복, seed 42) 나눠 잰 RMSE의 평균입니다. 모든 모델이 같은 fold를 씁니다.
 - Public LB = 테스트 이미지 30%에 대한 점수입니다. 모든 파일에서 public LB가 CV보다 약 1.0~1.2 낮았습니다.
 - 파일 전체 이름, SHA-256, 메모: [reports/final_candidates.md](reports/final_candidates.md), `reports/lb_tracking.json`.
-- 전체 실험 기록: [experiments.md](experiments.md) (요약: [experiments.ko.md](experiments.ko.md)).
 
 ## 실행 방법
 
@@ -60,4 +59,4 @@ brew install libomp                               # macOS만 (LightGBM에 필요
 | `cnn3.py`, `cnn4.py` | DINOv2 미세조정 (007, 008) |
 | `p17_dino_probe.py`, `p13_build_004.py`, `p17_build.py` | 고정 DINOv2 특징, 모델 평균, CSV 파일 |
 | `writeup.py` | 솔루션 PDF (`reports/solution.pdf`) |
-| 나머지 `p1*`/`p2*` 스크립트 | experiments.md에 적힌 실험들 (CSV를 다시 만드는 데는 필요 없음) |
+| 나머지 `p1*`/`p2*` 스크립트 | 그 밖의 실험들 (CSV를 다시 만드는 데는 필요 없음) |

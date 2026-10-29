@@ -2,7 +2,7 @@
 
 言語: [English](README.md) | [한국어](README.ko.md) | 日本語
 
-DACON/DAKER「合成微細構造に基づく材料物性予測 AI コンペ」(2026年9月29日〜10月19日)のコードです。
+合成微細構造に基づく材料物性予測 AI コンペ(2026年9月29日〜10月19日)のコードです。
 課題: 合成材料の構造を写した 256×256 の白黒画像 1 枚から、硬さの値を予測します。
 学習画像 500 枚(正解あり)、テスト画像 1000 枚です。スコアは RMSE で、低いほど良いです。
 
@@ -22,7 +22,6 @@ DACON/DAKER「合成微細構造に基づく材料物性予測 AI コンペ」(2
 - CV = 学習画像を 15 回(5-fold × 3 回、seed 42)に分けて測った RMSE の平均です。全モデルが同じ fold を使います。
 - Public LB = テスト画像の 30% に対するスコアです。どのファイルでも public LB は CV より約 1.0〜1.2 低くなりました。
 - ファイルの正式名、SHA-256、メモ: [reports/final_candidates.md](reports/final_candidates.md)、`reports/lb_tracking.json`。
-- 実験の全記録: [experiments.md](experiments.md)(要約: [experiments.ja.md](experiments.ja.md))。
 
 ## 実行方法
 
@@ -60,4 +59,4 @@ brew install libomp                               # macOS のみ (LightGBM に�
 | `cnn3.py`、`cnn4.py` | DINOv2 のファインチューニング (007、008) |
 | `p17_dino_probe.py`、`p13_build_004.py`、`p17_build.py` | 固定 DINOv2 特徴、モデルの平均、CSV ファイル |
 | `writeup.py` | 解法 PDF (`reports/solution.pdf`) |
-| そのほかの `p1*`/`p2*` スクリプト | experiments.md に書いた実験 (CSV を作り直すのには不要) |
+| そのほかの `p1*`/`p2*` スクリプト | そのほかの実験 (CSV を作り直すのには不要) |
